@@ -1,0 +1,172 @@
+import '../../features/game/domain/skin_stats.dart';
+import '../../features/game/domain/weapon_special.dart';
+import '../../features/game/domain/weapon_stats.dart';
+
+class ShopCatalog {
+  static const weapons = <WeaponStats>[
+    WeaponStats(
+      id: 'pistol',
+      name: 'Pistol',
+      damage: 10,
+      fireRate: 3,
+      bulletSpeed: 400,
+      spreadAngle: 0.05,
+      price: 0,
+    ),
+    WeaponStats(
+      id: 'rifle',
+      name: 'Rifle',
+      damage: 14,
+      fireRate: 5,
+      bulletSpeed: 500,
+      spreadAngle: 0.08,
+      price: 200,
+    ),
+    WeaponStats(
+      id: 'shotgun',
+      name: 'Shotgun',
+      damage: 8,
+      fireRate: 1.5,
+      bulletSpeed: 350,
+      spreadAngle: 0.35,
+      price: 350,
+    ),
+    WeaponStats(
+      id: 'sniper',
+      name: 'Sniper',
+      damage: 40,
+      fireRate: 0.8,
+      bulletSpeed: 700,
+      spreadAngle: 0.02,
+      price: 500,
+    ),
+    WeaponStats(
+      id: 'plasma_pistol',
+      name: 'Sleek Plasma Pistol',
+      damage: 16,
+      fireRate: 4.5,
+      bulletSpeed: 620,
+      spreadAngle: 0.03,
+      price: 600,
+      special: WeaponSpecial.armorPierce,
+      bulletColor: 0xFFFF80AB,
+      bulletGlowColor: 0xFFAB47BC,
+      description: 'Fast plasma bolts with armor-piercing damage.',
+    ),
+    WeaponStats(
+      id: 'pulse_smg',
+      name: 'Sub-Orbital Pulse SMG',
+      damage: 7,
+      fireRate: 9,
+      bulletSpeed: 380,
+      spreadAngle: 0.1,
+      price: 550,
+      special: WeaponSpecial.disorient,
+      bulletColor: 0xFF80DEEA,
+      bulletGlowColor: 0xFF00ACC1,
+      description: 'Rapid sonic bursts that slow nearby foes.',
+    ),
+    WeaponStats(
+      id: 'tesla_carbine',
+      name: 'Charged Tesla Carbine',
+      damage: 22,
+      fireRate: 2.2,
+      bulletSpeed: 540,
+      spreadAngle: 0.04,
+      price: 650,
+      special: WeaponSpecial.shock,
+      bulletColor: 0xFF64B5F6,
+      bulletGlowColor: 0xFFFFD54F,
+      description: 'Charged shots that briefly stun enemies.',
+    ),
+  ];
+
+  static const skins = <SkinStats>[
+    SkinStats(
+      id: 'default',
+      name: 'Cave Man',
+      characterFolder: 'Cave_Man_Character_2',
+      hpBonus: 0,
+      speedBonus: 0,
+      colorValue: 0xFF4CAF50,
+    ),
+    SkinStats(
+      id: 'archer',
+      name: 'Archer',
+      characterFolder: 'Archer_Character_1',
+      hpBonus: 0,
+      speedBonus: 0.04,
+      price: 100,
+      colorValue: 0xFF8BC34A,
+    ),
+    SkinStats(
+      id: 'clown',
+      name: 'Clown',
+      characterFolder: 'Clown_Character_3',
+      hpBonus: 0.03,
+      speedBonus: 0.05,
+      price: 120,
+      colorValue: 0xFFFF5722,
+    ),
+    SkinStats(
+      id: 'gumiho',
+      name: 'Monk',
+      characterFolder: 'Monk_Character_4',
+      hpBonus: 0.05,
+      speedBonus: 0.03,
+      price: 150,
+      colorValue: 0xFFE8A317,
+    ),
+    SkinStats(
+      id: 'ninja',
+      name: 'Ninja',
+      characterFolder: 'Ninja_Character_5',
+      hpBonus: 0,
+      speedBonus: 0.08,
+      price: 200,
+      colorValue: 0xFF9C27B0,
+    ),
+    SkinStats(
+      id: 'pirate',
+      name: 'Pirate',
+      characterFolder: 'Pirate_Character_6',
+      hpBonus: 0.04,
+      speedBonus: 0.02,
+      price: 220,
+      colorValue: 0xFF795548,
+    ),
+    SkinStats(
+      id: 'soldier',
+      name: 'Soldier',
+      characterFolder: 'Soldier_Character_7',
+      hpBonus: 0.06,
+      speedBonus: 0,
+      price: 240,
+      colorValue: 0xFF607D8B,
+    ),
+    SkinStats(
+      id: 'knight',
+      name: 'Warrior',
+      characterFolder: 'Warrior_Character_8',
+      hpBonus: 0.1,
+      speedBonus: 0,
+      price: 280,
+      colorValue: 0xFF455A64,
+    ),
+    SkinStats(
+      id: 'wizard',
+      name: 'Wizard',
+      characterFolder: 'Wizard_Character_9',
+      hpBonus: 0.08,
+      speedBonus: 0.02,
+      price: 320,
+      colorValue: 0xFF3F51B5,
+    ),
+  ];
+
+  static WeaponStats weaponById(String id) =>
+      weapons.firstWhere((w) => w.id == id, orElse: () => weapons.first);
+
+  static SkinStats skinById(String id) =>
+      skins.firstWhere((s) => s.id == id, orElse: () => skins.first);
+}

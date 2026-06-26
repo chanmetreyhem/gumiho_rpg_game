@@ -1,0 +1,64 @@
+name: gumiho_rpg_game
+description: Top-down twin-stick RPG shooter built with Flutter and Flame.
+publish_to: 'none'
+version: 1.0.0+3
+
+environment:
+  sdk: ^3.9.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  flame: ^1.22.0
+  flame_audio: ^2.10.6
+  flutter_riverpod: ^2.6.1
+  go_router: ^14.6.2
+  shared_preferences: ^2.3.3
+  intl: any
+  google_fonts: ^8.1.0
+  google_mobile_ads: ^7.0.0
+  in_app_purchase: ^3.2.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.4
+
+flutter:
+  generate: true
+  uses-material-design: true
+  assets:
+    - assets/audio/
+    - assets/audio/shoot.wav
+    - assets/audio/hit.wav
+    - assets/audio/enemy_death.wav
+    - assets/audio/explosion.wav
+    - assets/audio/bomb_throw.wav
+    - assets/audio/level_complete.wav
+    - assets/audio/game_over.wav
+    - assets/audio/music_loop.wav
+    - assets/images/enviroment.png
+    - assets/images/gun/
+    - assets/images/enemies/zombie/
+    - assets/images/enemies/monster/
+    - assets/images/enemies/tank/
+    - assets/images/Characters/Archer_Character_1/
+    - assets/images/Characters/Cave_Man_Character_2/
+    - assets/images/Characters/Clown_Character_3/
+    - assets/images/Characters/Monk_Character_4/
+    - assets/images/Characters/Ninja_Character_5/
+    - assets/images/Characters/Pirate_Character_6/
+    - assets/images/Characters/Soldier_Character_7/
+    - assets/images/Characters/Warrior_Character_8/
+    - assets/images/Characters/Wizard_Character_9/
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: assets/icon/app_icon.png
+  adaptive_icon_background: "#6C3CE9"
+  adaptive_icon_foreground: assets/icon/app_icon.png

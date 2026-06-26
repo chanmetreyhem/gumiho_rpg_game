@@ -1,0 +1,132 @@
+{
+  "@@locale": "en",
+  "appTitle": "Gumiho RPG",
+  "play": "Play",
+  "shop": "Shop",
+  "settings": "Settings",
+  "level": "Level {number}",
+  "@level": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "wave": "Wave {current}/{total}",
+  "@wave": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "coins": "Coins",
+  "bomb": "Bomb",
+  "language": "Language",
+  "english": "English",
+  "khmer": "Khmer",
+  "musicVolume": "Music",
+  "sfxVolume": "Sound Effects",
+  "back": "Back",
+  "pause": "Pause",
+  "resume": "Resume",
+  "quit": "Quit",
+  "locked": "Locked",
+  "equip": "Equip",
+  "buy": "Buy",
+  "owned": "Owned",
+  "levelComplete": "Level Complete!",
+  "gameOver": "Game Over",
+  "continueBtn": "Continue",
+  "coinsEarned": "Coins earned: {amount}",
+  "@coinsEarned": {
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "welcomeBack": "WELCOME BACK",
+  "letsPlay": "LET'S PLAY",
+  "gameTagline": "Survive waves. Upgrade gear. Become legend.",
+  "selectLevel": "Select Level",
+  "guns": "Guns",
+  "skins": "Skins",
+  "youScored": "YOU'VE SCORED",
+  "points": "Points",
+  "playAgain": "PLAY AGAIN",
+  "closeGame": "CLOSE GAME",
+  "joystickSensitivity": "Joystick Sensitivity",
+  "equipped": "Equipped",
+  "equippedLoadout": "Equipped",
+  "resetProgress": "Reset Progress",
+  "resetProgressTitle": "Reset all progress?",
+  "resetProgressConfirm": "This will erase coins, levels, and shop purchases. This cannot be undone.",
+  "cancel": "Cancel",
+  "reset": "Reset",
+  "navHome": "Home",
+  "navPlay": "Play",
+  "free": "Free",
+  "weaponStats": "DMG {damage} · FR {fireRate}",
+  "@weaponStats": {
+    "placeholders": {
+      "damage": { "type": "int" },
+      "fireRate": { "type": "String" }
+    }
+  },
+  "skinStats": "HP +{hp}% · SPD +{speed}%",
+  "@skinStats": {
+    "placeholders": {
+      "hp": { "type": "int" },
+      "speed": { "type": "int" }
+    }
+  },
+  "premium": "Premium",
+  "removeAds": "Remove Ads",
+  "coinPack500": "500 Coins",
+  "coinPack1500": "1500 Coins",
+  "premiumWizard": "Premium Wizard Skin",
+  "restorePurchases": "Restore Purchases",
+  "watchAdForCoins": "Watch ad for +50 coins",
+  "watchAdToRevive": "Watch ad to revive",
+  "rewardedCoinsGranted": "+50 coins added!",
+  "adsRemoved": "Ads removed",
+  "purchaseRestored": "Purchases restored",
+  "comboPickTitle": "Wave cleared!",
+  "comboPickSubtitle": "Choose one boost for the next wave",
+  "comboDamageTitle": "Power Shot",
+  "comboDamageDesc": "+{percent}% bullet damage",
+  "@comboDamageDesc": {
+    "placeholders": { "percent": { "type": "int" } }
+  },
+  "comboFireRateTitle": "Rapid Fire",
+  "comboFireRateDesc": "+{percent}% fire rate",
+  "@comboFireRateDesc": {
+    "placeholders": { "percent": { "type": "int" } }
+  },
+  "comboMaxHpTitle": "Iron Body",
+  "comboMaxHpDesc": "+{percent}% max HP",
+  "@comboMaxHpDesc": {
+    "placeholders": { "percent": { "type": "int" } }
+  },
+  "comboHealTitle": "First Aid",
+  "comboHealDesc": "Restore {percent}% HP",
+  "@comboHealDesc": {
+    "placeholders": { "percent": { "type": "int" } }
+  },
+  "comboSpeedTitle": "Swift Feet",
+  "comboSpeedDesc": "+{percent}% move speed",
+  "@comboSpeedDesc": {
+    "placeholders": { "percent": { "type": "int" } }
+  },
+  "comboBombTitle": "Extra Bomb",
+  "comboBombDesc": "+1 bomb for this run",
+  "comboBulletSpeedTitle": "Fast Bullets",
+  "comboBulletSpeedDesc": "+{percent}% bullet speed",
+  "@comboBulletSpeedDesc": {
+    "placeholders": { "percent": { "type": "int" } }
+  }
+}

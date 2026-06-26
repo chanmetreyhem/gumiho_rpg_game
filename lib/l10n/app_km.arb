@@ -1,0 +1,132 @@
+{
+  "@@locale": "km",
+  "appTitle": "គូមីហូ RPG",
+  "play": "លេង",
+  "shop": "ហាង",
+  "settings": "ការកំណត់",
+  "level": "កម្រិត {number}",
+  "@level": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "wave": "រលក {current}/{total}",
+  "@wave": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "coins": "កាក់",
+  "bomb": "គ្រាប់បែក",
+  "language": "ភាសា",
+  "english": "English",
+  "khmer": "ខ្មែរ",
+  "musicVolume": "តន្ត្រី",
+  "sfxVolume": "សំឡេង",
+  "back": "ត្រលប់",
+  "pause": "ផ្អាក",
+  "resume": "បន្ត",
+  "quit": "ចាកចេញ",
+  "locked": "ចាក់សោ",
+  "equip": "ប្រើ",
+  "buy": "ទិញ",
+  "owned": "មានរួច",
+  "levelComplete": "បញ្ចប់កម្រិត!",
+  "gameOver": "ចាញ់ហ្គេម",
+  "continueBtn": "បន្ត",
+  "coinsEarned": "កាក់ទទួលបាន: {amount}",
+  "@coinsEarned": {
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "welcomeBack": "សូមស្វាគមន៍",
+  "letsPlay": "លេងឥឡូវ",
+  "gameTagline": "ប្រយុទ្ធរលក ដំឡើងអាវុធ ក្លាយជរឿន",
+  "selectLevel": "ជ្រើសកម្រិត",
+  "guns": "កាំភ្លើង",
+  "skins": "ស្បែក",
+  "youScored": "ពិន្ទុរបស់អ្នក",
+  "points": "ពិន្ទុ",
+  "playAgain": "លេងម្តងទៀត",
+  "closeGame": "បិទហ្គេម",
+  "joystickSensitivity": "ភាពរសើបរបាញ់",
+  "equipped": "កំពុងប្រើ",
+  "equippedLoadout": "ឧបករណ៍ប្រើ",
+  "resetProgress": "កំណត់ឡើងវិញ",
+  "resetProgressTitle": "លុបវឌ្ឍនភាពទាំងអស់?",
+  "resetProgressConfirm": "នេះនឹងលុបកាក់ កម្រិត និងការទិញក្នុងហាង។ មិនអាចត្រឡប់វិញបានទេ។",
+  "cancel": "បោះបង់",
+  "reset": "កំណត់ឡើងវិញ",
+  "navHome": "ទំព័រដើម",
+  "navPlay": "លេង",
+  "free": "ឥតគិតថ្លៃ",
+  "weaponStats": "ខូច {damage} · បាញ់ {fireRate}",
+  "@weaponStats": {
+    "placeholders": {
+      "damage": { "type": "int" },
+      "fireRate": { "type": "String" }
+    }
+  },
+  "skinStats": "ឈាម +{hp}% · ល្បឿន +{speed}%",
+  "@skinStats": {
+    "placeholders": {
+      "hp": { "type": "int" },
+      "speed": { "type": "int" }
+    }
+  },
+  "premium": "ពិសេស",
+  "removeAds": "លុបពាណិយកម្ម",
+  "coinPack500": "កាក់ ៥០០",
+  "coinPack1500": "កាក់ ១៥០០",
+  "premiumWizard": "ស្បែក Wizard ពិសេស",
+  "restorePurchases": "ស្តារការទិញ",
+  "watchAdForCoins": "មើលពាណិយកម្ម ទទួលកាក់ +៥០",
+  "watchAdToRevive": "មើលពាណិយកម្ម ដើម្បីរស់វិញ",
+  "rewardedCoinsGranted": "បានបន្ថែមកាក់ ៥០!",
+  "adsRemoved": "បានលុបពាណិយកម្ម",
+  "purchaseRestored": "បានស្តារការទិញ",
+  "comboPickTitle": "បញ្ចប់រលក!",
+  "comboPickSubtitle": "ជ្រើសរើសការបន្ថែមមួយសម្រាប់រលកបន្ទាប់",
+  "comboDamageTitle": "ការបាញ់ខ្លាំង",
+  "comboDamageDesc": "+{percent}% កំហាប់គ្រាប់",
+  "@comboDamageDesc": {
+    "placeholders": { "percent": { "type": "int" } }
+  },
+  "comboFireRateTitle": "បាញ់លឿន",
+  "comboFireRateDesc": "+{percent}% ល្បឿនបាញ់",
+  "@comboFireRateDesc": {
+    "placeholders": { "percent": { "type": "int" } }
+  },
+  "comboMaxHpTitle": "រាងខ្លាំង",
+  "comboMaxHpDesc": "+{percent}% ឈាមអតិបរមា",
+  "@comboMaxHpDesc": {
+    "placeholders": { "percent": { "type": "int" } }
+  },
+  "comboHealTitle": "ព្យាបាល",
+  "comboHealDesc": "ស្តារឈាម {percent}%",
+  "@comboHealDesc": {
+    "placeholders": { "percent": { "type": "int" } }
+  },
+  "comboSpeedTitle": "ជើងលឿន",
+  "comboSpeedDesc": "+{percent}% ល្បឿនដើរ",
+  "@comboSpeedDesc": {
+    "placeholders": { "percent": { "type": "int" } }
+  },
+  "comboBombTitle": "គ្រាប់បែកបន្ថែម",
+  "comboBombDesc": "+១ គ្រាប់បែកក្នុងដំណើរនេះ",
+  "comboBulletSpeedTitle": "គ្រាប់លឿន",
+  "comboBulletSpeedDesc": "+{percent}% ល្បឿនគ្រាប់",
+  "@comboBulletSpeedDesc": {
+    "placeholders": { "percent": { "type": "int" } }
+  }
+}
