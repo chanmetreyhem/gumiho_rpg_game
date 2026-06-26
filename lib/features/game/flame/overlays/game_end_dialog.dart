@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gumiho_rpg_game/l10n/app_localizations.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/app_animations.dart';
 import '../../../../core/widgets/app_buttons.dart';
 import '../../../../core/widgets/app_card.dart';
 
@@ -32,7 +33,8 @@ class GameEndDialog extends StatelessWidget {
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.symmetric(horizontal: 24),
-      child: AppCard(
+      child: ScaleFadeIn(
+        child: AppCard(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -86,12 +88,18 @@ class GameEndDialog extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(
                   3,
-                  (i) => Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: Icon(
-                      i < stars ? Icons.star_rounded : Icons.star_border_rounded,
-                      color: AppColors.gold,
-                      size: 36,
+                  (i) => FadeSlideIn(
+                    delay: Duration(milliseconds: 200 + i * 120),
+                    offset: const Offset(0, 20),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: Icon(
+                        i < stars
+                            ? Icons.star_rounded
+                            : Icons.star_border_rounded,
+                        color: AppColors.gold,
+                        size: 36,
+                      ),
                     ),
                   ),
                 ),
@@ -136,6 +144,7 @@ class GameEndDialog extends StatelessWidget {
               onPressed: onContinue,
             ),
           ],
+        ),
         ),
       ),
     );

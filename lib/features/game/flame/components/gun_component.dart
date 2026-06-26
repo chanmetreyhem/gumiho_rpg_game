@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import '../../../../data/config/game_assets.dart';
 import '../../domain/weapon_stats.dart';
 import '../gumiho_game.dart';
-import 'bullet_component.dart';
 
 class GunComponent extends PositionComponent with HasGameReference<GumihoGame> {
   GunComponent({required this.weapon});
@@ -81,16 +80,14 @@ class GunComponent extends PositionComponent with HasGameReference<GumihoGame> {
       glowColor: Color(weapon.bulletGlowColor),
     );
 
-    game.world.add(
-      BulletComponent(
-        position: muzzle,
-        direction: dir,
-        damage: weapon.damage * game.runBuffs.damageMultiplier,
-        speed: weapon.bulletSpeed * game.runBuffs.bulletSpeedMultiplier,
-        special: weapon.special,
-        bulletColor: weapon.bulletColor,
-        bulletGlowColor: weapon.bulletGlowColor,
-      ),
+    game.bulletPool.spawn(
+      position: muzzle,
+      direction: dir,
+      damage: weapon.damage * game.runBuffs.damageMultiplier,
+      speed: weapon.bulletSpeed * game.runBuffs.bulletSpeedMultiplier,
+      special: weapon.special,
+      bulletColor: weapon.bulletColor,
+      bulletGlowColor: weapon.bulletGlowColor,
     );
   }
 }

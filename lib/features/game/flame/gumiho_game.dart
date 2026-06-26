@@ -18,6 +18,7 @@ import 'components/bomb_component.dart';
 import 'components/enemy_component.dart';
 import 'components/player_component.dart';
 import 'input/dual_joystick_setup.dart';
+import 'managers/bullet_pool.dart';
 import 'managers/effect_manager.dart';
 import 'managers/wave_manager.dart';
 import 'components/effects/particle_burst_component.dart';
@@ -84,6 +85,7 @@ class GumihoGame extends FlameGame with HasCollisionDetection {
   DateTime? _lastHudNotify;
 
   final EffectManager effects = EffectManager();
+  late final BulletPool bulletPool;
 
   late final GameAudio audio;
 
@@ -101,6 +103,9 @@ class GumihoGame extends FlameGame with HasCollisionDetection {
     camera.viewfinder.visibleGameSize = portraitViewSize;
 
     world.add(ArenaBackground(arenaSize: arenaSize));
+
+    bulletPool = BulletPool(this);
+    await bulletPool.preload();
 
     player = PlayerComponent(
       skin: skin,
@@ -130,6 +135,7 @@ class GumihoGame extends FlameGame with HasCollisionDetection {
 
   @override
   void onRemove() {
+    bulletPool.clear();
     effects.reset();
     audio.dispose();
     super.onRemove();

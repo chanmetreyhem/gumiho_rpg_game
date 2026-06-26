@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gumiho_rpg_game/l10n/app_localizations.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_animations.dart';
 import '../../../core/widgets/app_background.dart';
 import '../../../core/widgets/app_bottom_nav.dart';
 import '../../../core/widgets/app_buttons.dart';
@@ -38,46 +39,48 @@ class MainMenuScreen extends ConsumerWidget {
                 children: [
                   Padding(
                     padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                l10n.welcomeBack,
-                                style:
-                                    Theme.of(context).textTheme.bodyMedium,
-                              ),
-                              Text(
-                                l10n.appTitle,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .headlineLarge,
-                              ),
-                            ],
+                    child: FadeSlideIn(
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  l10n.welcomeBack,
+                                  style:
+                                      Theme.of(context).textTheme.bodyMedium,
+                                ),
+                                Text(
+                                  l10n.appTitle,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineLarge,
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color:
-                                    AppColors.purple.withValues(alpha: 0.1),
-                                blurRadius: 12,
-                              ),
-                            ],
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color:
+                                      AppColors.purple.withValues(alpha: 0.1),
+                                  blurRadius: 12,
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.pets_rounded,
+                              color: AppColors.purple,
+                              size: 28,
+                            ),
                           ),
-                          child: const Icon(
-                            Icons.pets_rounded,
-                            color: AppColors.purple,
-                            size: 28,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -86,7 +89,9 @@ class MainMenuScreen extends ConsumerWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 24),
                       child: Column(
                         children: [
-                          AppCard(
+                          FadeSlideIn(
+                            delay: const Duration(milliseconds: 80),
+                            child: AppCard(
                             padding: EdgeInsets.zero,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -235,27 +240,31 @@ class MainMenuScreen extends ConsumerWidget {
                               ],
                             ),
                           ),
+                          ),
                           const SizedBox(height: 16),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _QuickAction(
-                                  icon: Icons.storefront_rounded,
-                                  label: l10n.shop,
-                                  color: AppColors.orange,
-                                  onTap: () => context.push('/shop'),
+                          FadeSlideIn(
+                            delay: const Duration(milliseconds: 180),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: _QuickAction(
+                                    icon: Icons.storefront_rounded,
+                                    label: l10n.shop,
+                                    color: AppColors.orange,
+                                    onTap: () => context.push('/shop'),
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _QuickAction(
-                                  icon: Icons.settings_rounded,
-                                  label: l10n.settings,
-                                  color: AppColors.purple,
-                                  onTap: () => context.push('/settings'),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: _QuickAction(
+                                    icon: Icons.settings_rounded,
+                                    label: l10n.settings,
+                                    color: AppColors.purple,
+                                    onTap: () => context.push('/settings'),
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ],
                       ),
@@ -320,28 +329,31 @@ class _QuickAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppCard(
+    return PressableScale(
       onTap: onTap,
-      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.12),
-              shape: BoxShape.circle,
+      child: AppCard(
+        onTap: null,
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 28),
             ),
-            child: Icon(icon, color: color, size: 28),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            label,
-            style: const TextStyle(
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+            const SizedBox(height: 10),
+            Text(
+              label,
+              style: const TextStyle(
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

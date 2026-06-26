@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gumiho_rpg_game/l10n/app_localizations.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/app_animations.dart';
 import '../../application/game_session_notifier.dart';
 import '../gumiho_game.dart';
 
@@ -110,44 +111,50 @@ class _GameHudOverlayState extends ConsumerState<GameHudOverlay> {
             padding: const EdgeInsets.all(12),
             child: Column(
               children: [
-                Row(
-                  children: [
-                    _GlassChip(
-                      child: _HpBar(hp: playerHp, maxHp: maxHp),
-                    ),
-                    const Spacer(),
-                    _GlassIconButton(
-                      icon: Icons.pause_rounded,
-                      onPressed: widget.game.requestPause,
-                      tooltip: l10n.pause,
-                    ),
-                  ],
+                FadeSlideIn(
+                  offset: const Offset(0, -12),
+                  child: Row(
+                    children: [
+                      _GlassChip(
+                        child: _HpBar(hp: playerHp, maxHp: maxHp),
+                      ),
+                      const Spacer(),
+                      _GlassIconButton(
+                        icon: Icons.pause_rounded,
+                        onPressed: widget.game.requestPause,
+                        tooltip: l10n.pause,
+                      ),
+                    ],
+                  ),
                 ),
                 const Spacer(),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _GlassChip(
-                      child: _InfoRow(
-                        icon: Icons.waves_rounded,
-                        label: l10n.wave(currentWave, totalWaves),
+                FadeSlideIn(
+                  delay: const Duration(milliseconds: 120),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _GlassChip(
+                        child: _InfoRow(
+                          icon: Icons.waves_rounded,
+                          label: l10n.wave(currentWave, totalWaves),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    _GlassChip(
-                      child: _InfoRow(
-                        icon: Icons.monetization_on_rounded,
-                        label: '$runCoins',
+                      const SizedBox(width: 8),
+                      _GlassChip(
+                        child: _InfoRow(
+                          icon: Icons.monetization_on_rounded,
+                          animatedValue: runCoins,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    _DraggableBombChip(
-                      label: l10n.bomb,
-                      count: bombsRemaining,
-                      enabled: bombsRemaining > 0 && !widget.game.paused,
-                      onDragStart: _startBombDrag,
-                    ),
-                  ],
+                      const SizedBox(width: 8),
+                      _DraggableBombChip(
+                        label: l10n.bomb,
+                        count: bombsRemaining,
+                        enabled: bombsRemaining > 0 && !widget.game.paused,
+                        onDragStart: _startBombDrag,
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -312,43 +319,43 @@ class _HpBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ratio = maxHp > 0 ? (hp / maxHp).clamp(0.0, 1.0) : 0.0;
-    return SizedBox(
-      width: 120,
-      height: 10,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(6),
-        child: LinearProgressIndicator(
-          value: ratio,
-          backgroundColor: AppColors.purpleLight.withValues(alpha: 0.3),
-          color: ratio > 0.3 ? AppColors.purple : AppColors.orange,
-          minHeight: 10,
-        ),
-      ),
+    return AnimatedProgressBar(
+      value: ratio,
+      backgroundColor: AppColors.purpleLight.withValues(alpha: 0.3),
+      foregroundColor: AppColors.purple,
+      lowForegroundColor: AppColors.orange,
     );
   }
 }
 
 class _InfoRow extends StatelessWidget {
-  const _InfoRow({required this.icon, required this.label});
+  const _InfoRow({
+    required this.icon,
+    this.label,
+    this.animatedValue,
+  });
 
   final IconData icon;
-  final String label;
+  final String? label;
+  final int? animatedValue;
 
   @override
   Widget build(BuildContext context) {
+    final textStyle = TextStyle(
+      color: AppColors.textPrimary,
+      fontWeight: FontWeight.w700,
+      fontSize: 13,
+    );
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(icon, color: AppColors.purple, size: 16),
         const SizedBox(width: 6),
-        Text(
-          label,
-          style: TextStyle(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.w700,
-            fontSize: 13,
-          ),
-        ),
+        if (animatedValue != null)
+          AnimatedCountText(value: animatedValue!, style: textStyle)
+        else
+          Text(label ?? '', style: textStyle),
       ],
     );
   }

@@ -9,47 +9,88 @@ import 'enemy_component.dart';
 
 class BulletComponent extends PositionComponent
     with CollisionCallbacks, HasGameReference<GumihoGame> {
-  BulletComponent({
-    required Vector2 position,
-    required Vector2 direction,
-    required this.damage,
-    required this.speed,
-    this.special = WeaponSpecial.none,
-    this.bulletColor = 0xFFFFF59D,
-    this.bulletGlowColor = 0xFFFFEB3B,
-  })  : _direction = direction.normalized(),
+  BulletComponent._()
+      : _direction = Vector2(1, 0),
         super(
-          position: position,
           size: Vector2(12, 12),
           anchor: Anchor.center,
         );
 
-  final double damage;
-  final double speed;
-  final WeaponSpecial special;
-  final int bulletColor;
-  final int bulletGlowColor;
-  final Vector2 _direction;
-  double _traveled = 0;
+  factory BulletComponent.forPool() => BulletComponent._();
 
-  late final Paint _glowPaint = Paint()
-    ..color = Color(bulletGlowColor).withValues(alpha: 0.35);
-  late final Paint _bodyPaint = Paint()..color = Color(bulletColor);
+  double damage = 0;
+  double speed = 0;
+  WeaponSpecial special = WeaponSpecial.none;
+  int bulletColor = 0xFFFFF59D;
+  int bulletGlowColor = 0xFFFFEB3B;
+
+  Vector2 _direction;
+  double _traveled = 0;
+  bool _active = false;
+
+  CircleHitbox? _hitbox;
+
+  late Paint _glowPaint = Paint()
+    ..color = const Color(0xFFFFEB3B).withValues(alpha: 0.35);
+  late Paint _bodyPaint = Paint()..color = const Color(0xFFFFF59D);
   static final Paint _corePaint = Paint()..color = Colors.white;
+
+  bool get isActive => _active;
+
+  void activate({
+    required Vector2 position,
+    required Vector2 direction,
+    required double damage,
+    required double speed,
+    WeaponSpecial special = WeaponSpecial.none,
+    int bulletColor = 0xFFFFF59D,
+    int bulletGlowColor = 0xFFFFEB3B,
+  }) {
+    this.position.setFrom(position);
+    _direction = direction.normalized();
+    this.damage = damage;
+    this.speed = speed;
+    this.special = special;
+    this.bulletColor = bulletColor;
+    this.bulletGlowColor = bulletGlowColor;
+    _traveled = 0;
+    _active = true;
+    _updatePaints();
+    _hitbox?.collisionType = CollisionType.active;
+  }
+
+  void deactivate() {
+    _active = false;
+    _hitbox?.collisionType = CollisionType.inactive;
+  }
+
+  void _updatePaints() {
+    _glowPaint = Paint()
+      ..color = Color(bulletGlowColor).withValues(alpha: 0.35);
+    _bodyPaint = Paint()..color = Color(bulletColor);
+  }
+
+  void _release() => game.bulletPool.release(this);
 
   @override
   Future<void> onLoad() async {
-    add(CircleHitbox(radius: 4));
+    _hitbox = CircleHitbox(radius: 4);
+    await add(_hitbox!);
+    if (!_active) {
+      _hitbox!.collisionType = CollisionType.inactive;
+    }
   }
 
   @override
   void update(double dt) {
     super.update(dt);
+    if (!_active) return;
+
     final delta = _direction * speed * dt;
     position += delta;
     _traveled += delta.length;
     if (_traveled >= GumihoGame.bulletMaxDistance) {
-      removeFromParent();
+      _release();
     }
   }
 
@@ -59,7 +100,7 @@ class BulletComponent extends PositionComponent
     PositionComponent other,
   ) {
     super.onCollisionStart(intersectionPoints, other);
-    if (other is! EnemyComponent) return;
+    if (!_active || other is! EnemyComponent) return;
 
     game.audio.playHit();
     other.takeDamage(_resolveDamage(other));
@@ -70,7 +111,7 @@ class BulletComponent extends PositionComponent
       coreColor: Color(bulletColor),
       glowColor: Color(bulletGlowColor),
     );
-    removeFromParent();
+    _release();
   }
 
   double _resolveDamage(EnemyComponent enemy) {
@@ -96,6 +137,8 @@ class BulletComponent extends PositionComponent
 
   @override
   void render(Canvas canvas) {
+    if (!_active) return;
+
     final center = Offset(size.x / 2, size.y / 2);
     canvas.drawCircle(center, 6, _glowPaint);
     canvas.drawCircle(center, 4, _bodyPaint);

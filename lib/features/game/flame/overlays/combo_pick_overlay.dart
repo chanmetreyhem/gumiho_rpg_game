@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gumiho_rpg_game/l10n/app_localizations.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/app_animations.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../domain/run_combo.dart';
 import '../gumiho_game.dart';
@@ -22,43 +23,49 @@ class ComboPickOverlay extends StatelessWidget {
         child: Center(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: AppCard(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.auto_awesome_rounded,
-                    color: AppColors.purple,
-                    size: 36,
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    l10n.comboPickTitle,
-                    style: Theme.of(context).textTheme.titleLarge,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    l10n.comboPickSubtitle,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textSecondary,
+            child: ScaleFadeIn(
+              child: AppCard(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.auto_awesome_rounded,
+                      color: AppColors.purple,
+                      size: 36,
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      l10n.comboPickTitle,
+                      style: Theme.of(context).textTheme.titleLarge,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      l10n.comboPickSubtitle,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 18),
+                    ...choices.asMap().entries.map(
+                      (entry) => FadeSlideIn(
+                        delay: Duration(milliseconds: 80 + entry.key * 70),
+                        offset: const Offset(24, 0),
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: _ComboOptionTile(
+                            combo: entry.value,
+                            title: _title(l10n, entry.value),
+                            description: _description(l10n, entry.value),
+                            onTap: () => game.pickCombo(entry.value),
+                          ),
                         ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 18),
-                  ...choices.map(
-                    (combo) => Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: _ComboOptionTile(
-                        combo: combo,
-                        title: _title(l10n, combo),
-                        description: _description(l10n, combo),
-                        onTap: () => game.pickCombo(combo),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -108,11 +115,10 @@ class _ComboOptionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+    return PressableScale(
+      onTap: onTap,
+      child: Material(
+        color: Colors.transparent,
         child: Ink(
           decoration: BoxDecoration(
             gradient: LinearGradient(

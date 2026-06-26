@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gumiho_rpg_game/l10n/app_localizations.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_animations.dart';
 import '../../../core/widgets/app_background.dart';
 import '../../../core/widgets/app_bottom_nav.dart';
 import '../../../core/widgets/app_card.dart';
@@ -98,12 +99,17 @@ class LevelSelectScreen extends ConsumerWidget {
                     final unlocked = profile.isLevelUnlocked(level);
                     final stars = profile.levelStars[level] ?? 0;
 
-                    return _LevelTile(
-                      level: level,
-                      label: l10n.level(level),
-                      unlocked: unlocked,
-                      stars: stars,
-                      onTap: unlocked ? () => context.push('/game/$level') : null,
+                    return FadeSlideIn(
+                      delay: Duration(milliseconds: (index % 20) * 28),
+                      offset: const Offset(0, 14),
+                      child: _LevelTile(
+                        level: level,
+                        label: l10n.level(level),
+                        unlocked: unlocked,
+                        stars: stars,
+                        onTap:
+                            unlocked ? () => context.push('/game/$level') : null,
+                      ),
                     );
                   },
                 ),
@@ -135,11 +141,14 @@ class _LevelTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppCard(
+    return PressableScale(
       onTap: onTap,
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-      color: unlocked ? Colors.white : const Color(0xFFF0EDF8),
-      child: Column(
+      enabled: onTap != null,
+      child: AppCard(
+        onTap: null,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+        color: unlocked ? Colors.white : const Color(0xFFF0EDF8),
+        child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -185,6 +194,7 @@ class _LevelTile extends StatelessWidget {
             ),
           ],
         ],
+        ),
       ),
     );
   }
