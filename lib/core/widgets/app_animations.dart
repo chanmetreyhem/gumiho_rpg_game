@@ -242,11 +242,15 @@ class AnimatedProgressBar extends StatelessWidget {
           fit: StackFit.expand,
           children: [
             ColoredBox(color: backgroundColor),
-            AnimatedContainer(
-              duration: duration,
-              curve: Curves.easeOutCubic,
-              width: width * ratio,
-              color: fg,
+            Align(
+              alignment: Alignment.centerLeft,
+              child: AnimatedContainer(
+                duration: duration,
+                curve: Curves.easeOutCubic,
+                width: width * ratio,
+                height: height,
+                color: fg,
+              ),
             ),
           ],
         ),

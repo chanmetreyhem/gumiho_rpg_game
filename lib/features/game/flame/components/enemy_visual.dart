@@ -109,25 +109,32 @@ class EnemyVisual extends PositionComponent with HasGameReference<GumihoGame> {
   @override
   Future<void> onLoad() async {
     for (final layer in _layers) {
-      final path = GameAssets.enemyPart(enemyType.name, layer.part);
-      try {
-        final image = game.images.containsKey(path)
-            ? game.images.fromCache(path)
-            : await game.images.load(path);
-        final scale = targetHeight / image.height;
-        final scaledOffset = layer.offset * scale;
-        final sprite = SpriteComponent(
-          sprite: Sprite(image),
-          size: Vector2(image.width * scale, image.height * scale),
-          anchor: Anchor.center,
-          position: scaledOffset,
-        );
-        _parts[layer.part] = sprite;
-        _basePositions[layer.part] = scaledOffset.clone();
-        add(sprite);
-      } on Object {
-        // Some enemy types omit optional parts (e.g. zombie has no left_hand).
-      }
+      await _loadPart(layer.part, layer.offset);
+    }
+    for (final part in GameAssets.optionalPartsFor(enemyType)) {
+      await _loadPart(part, Vector2(0, -6));
+    }
+  }
+
+  Future<void> _loadPart(String part, Vector2 offset) async {
+    final path = GameAssets.enemyPartPath(enemyType, part);
+    try {
+      final image = game.images.containsKey(path)
+          ? game.images.fromCache(path)
+          : await game.images.load(path);
+      final scale = targetHeight / image.height;
+      final scaledOffset = offset * scale;
+      final sprite = SpriteComponent(
+        sprite: Sprite(image),
+        size: Vector2(image.width * scale, image.height * scale),
+        anchor: Anchor.center,
+        position: scaledOffset,
+      );
+      _parts[part] = sprite;
+      _basePositions[part] = scaledOffset.clone();
+      add(sprite);
+    } on Object {
+      // Optional sprite part — skip missing layers.
     }
   }
 }

@@ -1,6 +1,6 @@
 {
   "@@locale": "km",
-  "appTitle": "គូមីហូ RPG",
+  "appTitle": "CaveMan: Survivor",
   "play": "លេង",
   "shop": "ហាង",
   "settings": "ការកំណត់",
@@ -54,7 +54,15 @@
   "gameTagline": "ប្រយុទ្ធរលក ដំឡើងអាវុធ ក្លាយជរឿន",
   "selectLevel": "ជ្រើសកម្រិត",
   "guns": "កាំភ្លើង",
-  "skins": "ស្បែក",
+  "skins": "វីរបុរស",
+  "arenas": "សង្គ្រាមដី",
+  "shopTabHeroes": "វីរបុរស",
+  "shopTabGuns": "កាំភ្លើង",
+  "shopTabArenas": "សង្គ្រាមដី",
+  "shopTabPremium": "ពិសេស",
+  "shopTestModeBanner": "ម៉ូដសាកល្បង៖ បើកធាតុទាំងអស់សម្រាប់សាកល្បង។",
+  "shopLoadout": "ឧបករណ៍ប្រើ",
+  "shopTapToEquip": "ចុចទិញ ឬប្រើធាតុ",
   "youScored": "ពិន្ទុរបស់អ្នក",
   "points": "ពិន្ទុ",
   "playAgain": "លេងម្តងទៀត",
@@ -67,6 +75,21 @@
   "resetProgressConfirm": "នេះនឹងលុបកាក់ កម្រិត និងការទិញក្នុងហាង។ មិនអាចត្រឡប់វិញបានទេ។",
   "cancel": "បោះបង់",
   "reset": "កំណត់ឡើងវិញ",
+  "quickPlay": "លេងភ្លាម",
+  "waveProgress": "រលក",
+  "levelPage": "ទំព័រ {current} / {total}",
+  "@levelPage": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "levelsPerPage": "{count} កម្រិត",
+  "@levelsPerPage": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "audioSettings": "សំឡេង & ការបញ្ជា",
+  "accountSettings": "គណនី",
   "navHome": "ទំព័រដើម",
   "navPlay": "លេង",
   "free": "ឥតគិតថ្លៃ",
@@ -93,10 +116,26 @@
   "watchAdForCoins": "មើលពាណិយកម្ម ទទួលកាក់ +៥០",
   "watchAdToRevive": "មើលពាណិយកម្ម ដើម្បីរស់វិញ",
   "rewardedCoinsGranted": "បានបន្ថែមកាក់ ៥០!",
+  "adNotAvailable": "ពាណិយកម្មមិនទាន់អាចប្រើបានទេ។ សូមព្យាយាមម្តងទៀត។",
   "adsRemoved": "បានលុបពាណិយកម្ម",
   "purchaseRestored": "បានស្តារការទិញ",
   "comboPickTitle": "បញ្ចប់រលក!",
   "comboPickSubtitle": "ជ្រើសរើសការបន្ថែមមួយសម្រាប់រលកបន្ទាប់",
+  "comboPickHint": "ជ្រើសរើសកាតមួយពីខាងលើ",
+  "comboCategoryAct": "ACT",
+  "comboCategoryStat": "SATA",
+  "comboCategoryPas": "PAS",
+  "comboLevel": "Lv. {level}",
+  "@comboLevel": {
+    "placeholders": { "level": { "type": "int" } }
+  },
+  "comboProgress": "{current}/{max}",
+  "@comboProgress": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "max": { "type": "int" }
+    }
+  },
   "comboDamageTitle": "ការបាញ់ខ្លាំង",
   "comboDamageDesc": "+{percent}% កំហាប់គ្រាប់",
   "@comboDamageDesc": {
@@ -128,5 +167,17 @@
   "comboBulletSpeedDesc": "+{percent}% ល្បឿនគ្រាប់",
   "@comboBulletSpeedDesc": {
     "placeholders": { "percent": { "type": "int" } }
+  },
+  "splashLoadingProfile": "កំពុងផ្ទុកប្រវត្តិ...",
+  "splashLoadingSettings": "កំពុងផ្ទុកការកំណត់...",
+  "splashLoadingAds": "កំពុងចាប់ផ្ដើមពាណិជ្ជកម្ម...",
+  "splashLoadingStore": "កំពុងផ្ទុកហាង...",
+  "splashFinishing": "កំពុងចាប់ផ្ដើមហ្គេម...",
+  "gamePreparingLevel": "កំពុងរៀបចំកម្រិត...",
+  "gameLoadingLevel": "កំពុងផ្ទុកកម្រិត {level}...",
+  "@gameLoadingLevel": {
+    "placeholders": {
+      "level": { "type": "int" }
+    }
   }
 }

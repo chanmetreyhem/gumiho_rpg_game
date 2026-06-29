@@ -40,7 +40,7 @@ class ExplosionComponent extends PositionComponent
       if (dist <= radius) {
         final falloff = 1 - (dist / radius) * 0.3;
         var damage = baseDamage * falloff;
-        if (enemy.type == EnemyType.tank) damage *= 0.5;
+        if (enemy.type.isHeavy) damage *= 0.5;
         enemy.takeDamage(damage);
       }
     }

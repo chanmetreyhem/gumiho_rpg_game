@@ -26,6 +26,7 @@ class EnemyComponent extends PositionComponent
     coinReward = stats.coinReward;
     attackStopDistance = stats.attackStopDistance;
     size = Vector2.all(stats.size);
+    _hurtboxRadius = LevelCurve.hurtboxRadius(stats.size);
   }
 
   final EnemyType type;
@@ -38,7 +39,11 @@ class EnemyComponent extends PositionComponent
   late int coinReward;
   late double attackStopDistance;
 
+  late final double _hurtboxRadius;
   late final EnemyVisual _visual;
+
+  /// Radius used for bullet collision (matches [CircleHitbox]).
+  double get hitRadius => _hurtboxRadius;
 
   static final Paint _hpBgPaint = Paint()..color = Colors.black54;
   static final Paint _hpFillPaint = Paint()..color = Colors.red;
@@ -70,7 +75,12 @@ class EnemyComponent extends PositionComponent
       targetHeight: size.y,
     );
     await add(_visual);
-    add(CircleHitbox(radius: size.x / 2));
+    add(
+      CircleHitbox(
+        radius: _hurtboxRadius,
+        anchor: Anchor.center,
+      ),
+    );
   }
 
   @override

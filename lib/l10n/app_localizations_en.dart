@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'Gumiho RPG';
+  String get appTitle => 'CaveMan: Survivor';
 
   @override
   String get play => 'Play';
@@ -105,7 +105,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String get guns => 'Guns';
 
   @override
-  String get skins => 'Skins';
+  String get skins => 'Heroes';
+
+  @override
+  String get arenas => 'Arenas';
+
+  @override
+  String get shopTabHeroes => 'Heroes';
+
+  @override
+  String get shopTabGuns => 'Guns';
+
+  @override
+  String get shopTabArenas => 'Arenas';
+
+  @override
+  String get shopTabPremium => 'Premium';
+
+  @override
+  String get shopTestModeBanner =>
+      'Test mode: all items unlocked for trying features.';
+
+  @override
+  String get shopLoadout => 'Your loadout';
+
+  @override
+  String get shopTapToEquip => 'Tap an item to buy or equip';
 
   @override
   String get youScored => 'YOU\'VE SCORED';
@@ -143,6 +168,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reset => 'Reset';
+
+  @override
+  String get quickPlay => 'QUICK PLAY';
+
+  @override
+  String get waveProgress => 'WAVE';
+
+  @override
+  String levelPage(int current, int total) {
+    return 'Page $current / $total';
+  }
+
+  @override
+  String levelsPerPage(int count) {
+    return '$count levels';
+  }
+
+  @override
+  String get audioSettings => 'Audio & Controls';
+
+  @override
+  String get accountSettings => 'Account';
 
   @override
   String get navHome => 'Home';
@@ -191,6 +238,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rewardedCoinsGranted => '+50 coins added!';
 
   @override
+  String get adNotAvailable => 'Ad not available right now. Try again later.';
+
+  @override
   String get adsRemoved => 'Ads removed';
 
   @override
@@ -201,6 +251,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get comboPickSubtitle => 'Choose one boost for the next wave';
+
+  @override
+  String get comboPickHint => 'Select one card from above';
+
+  @override
+  String get comboCategoryAct => 'ACT';
+
+  @override
+  String get comboCategoryStat => 'SATA';
+
+  @override
+  String get comboCategoryPas => 'PAS';
+
+  @override
+  String comboLevel(int level) {
+    return 'Lv. $level';
+  }
+
+  @override
+  String comboProgress(int current, int max) {
+    return '$current/$max';
+  }
 
   @override
   String get comboDamageTitle => 'Power Shot';
@@ -254,5 +326,28 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String comboBulletSpeedDesc(int percent) {
     return '+$percent% bullet speed';
+  }
+
+  @override
+  String get splashLoadingProfile => 'Loading profile...';
+
+  @override
+  String get splashLoadingSettings => 'Loading settings...';
+
+  @override
+  String get splashLoadingAds => 'Initializing ads...';
+
+  @override
+  String get splashLoadingStore => 'Loading store...';
+
+  @override
+  String get splashFinishing => 'Starting game...';
+
+  @override
+  String get gamePreparingLevel => 'Preparing level...';
+
+  @override
+  String gameLoadingLevel(int level) {
+    return 'Loading level $level...';
   }
 }

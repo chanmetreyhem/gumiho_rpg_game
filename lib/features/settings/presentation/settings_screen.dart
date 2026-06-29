@@ -3,10 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gumiho_rpg_game/l10n/app_localizations.dart';
 
-import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/app_background.dart';
+import '../../../core/theme/game_ui_theme.dart';
 import '../../../core/widgets/app_bottom_nav.dart';
-import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/game_ui_widgets.dart';
 import '../../monetization/application/monetization_service.dart';
 import '../../profile/application/profile_notifier.dart';
 import '../application/settings_notifier.dart';
@@ -21,151 +20,120 @@ class SettingsScreen extends ConsumerWidget {
     final notifier = ref.read(settingsNotifierProvider.notifier);
 
     return Scaffold(
-      body: AppBackground(
+      body: GameScreenBackground(
         child: SafeArea(
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
+                padding: const EdgeInsets.fromLTRB(8, 4, 16, 0),
                 child: Row(
                   children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded),
-                      color: AppColors.textPrimary,
+                    GameRoundButton(
+                      icon: Icons.arrow_back_ios_new_rounded,
                       onPressed: () => context.go('/'),
+                      size: 38,
                     ),
                     Expanded(
                       child: Text(
                         l10n.settings,
-                        style: Theme.of(context).textTheme.headlineMedium,
                         textAlign: TextAlign.center,
+                        style: GameUiText.hudBold(20),
                       ),
                     ),
-                    const SizedBox(width: 48),
+                    const SizedBox(width: 38),
                   ],
                 ),
               ),
               Expanded(
                 child: ListView(
-                  padding: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.all(20),
                   children: [
-                    AppCard(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            l10n.language,
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                          const SizedBox(height: 12),
-                          SegmentedButton<String>(
-                            segments: [
-                              ButtonSegment(
-                                value: 'en',
-                                label: Text(l10n.english),
-                              ),
-                              ButtonSegment(
-                                value: 'km',
-                                label: Text(l10n.khmer),
-                              ),
-                            ],
-                            selected: {settings.localeCode},
-                            onSelectionChanged: (set) =>
-                                notifier.setLocale(set.first),
-                            style: ButtonStyle(
-                              backgroundColor:
-                                  WidgetStateProperty.resolveWith((states) {
-                                if (states.contains(WidgetState.selected)) {
-                                  return AppColors.purple;
-                                }
-                                return Colors.transparent;
-                              }),
-                              foregroundColor:
-                                  WidgetStateProperty.resolveWith((states) {
-                                if (states.contains(WidgetState.selected)) {
-                                  return Colors.white;
-                                }
-                                return AppColors.textPrimary;
-                              }),
-                            ),
-                          ),
-                        ],
+                    GameSectionCard(
+                      title: l10n.language,
+                      child: GameSegmentToggle<String>(
+                        options: const ['en', 'km'],
+                        selected: settings.localeCode,
+                        labelBuilder: (code) =>
+                            code == 'en' ? l10n.english : l10n.khmer,
+                        onChanged: notifier.setLocale,
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    AppCard(
+                    const SizedBox(height: 14),
+                    GameSectionCard(
+                      title: l10n.audioSettings,
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _SliderRow(
+                          GameSliderRow(
                             label: l10n.musicVolume,
                             value: settings.musicVolume,
                             onChanged: notifier.setMusicVolume,
                           ),
-                          const SizedBox(height: 16),
-                          _SliderRow(
+                          const SizedBox(height: 12),
+                          GameSliderRow(
                             label: l10n.sfxVolume,
                             value: settings.sfxVolume,
                             onChanged: notifier.setSfxVolume,
                           ),
-                          const SizedBox(height: 16),
-                          _SliderRow(
+                          const SizedBox(height: 12),
+                          GameSliderRow(
                             label: l10n.joystickSensitivity,
                             value: settings.joystickSensitivity,
                             min: 0.5,
                             max: 1.5,
+                            displayValue:
+                                '${settings.joystickSensitivity.toStringAsFixed(1)}x',
                             onChanged: notifier.setJoystickSensitivity,
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    AppCard(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            l10n.premium,
-                            style: Theme.of(context).textTheme.titleMedium,
+                    const SizedBox(height: 14),
+                    GameSectionCard(
+                      title: l10n.premium,
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton(
+                          onPressed: () async {
+                            await ref
+                                .read(monetizationServiceProvider)
+                                .restorePurchases();
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(l10n.purchaseRestored)),
+                            );
+                          },
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: GameUiColors.expCyan,
+                            side: const BorderSide(color: GameUiColors.expCyan),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
                           ),
-                          const SizedBox(height: 12),
-                          OutlinedButton(
-                            onPressed: () async {
-                              await ref
-                                  .read(monetizationServiceProvider)
-                                  .restorePurchases();
-                              if (!context.mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(l10n.purchaseRestored)),
-                              );
-                            },
-                            child: Text(l10n.restorePurchases),
-                          ),
-                        ],
+                          child: Text(l10n.restorePurchases),
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    AppCard(
+                    const SizedBox(height: 14),
+                    GameSectionCard(
+                      title: l10n.accountSettings,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            l10n.resetProgress,
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
                             l10n.resetProgressConfirm,
-                            style: Theme.of(context).textTheme.bodyMedium,
+                            style: GameUiText.label(),
                           ),
                           const SizedBox(height: 12),
-                          OutlinedButton(
-                            onPressed: () => _confirmReset(context, ref, l10n),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.red.shade700,
-                              side: BorderSide(color: Colors.red.shade300),
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton(
+                              onPressed: () =>
+                                  _confirmReset(context, ref, l10n),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: GameUiColors.waveRed,
+                                side: const BorderSide(color: GameUiColors.waveRed),
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                              ),
+                              child: Text(l10n.reset),
                             ),
-                            child: Text(l10n.reset),
                           ),
                         ],
                       ),
@@ -189,8 +157,9 @@ class SettingsScreen extends ConsumerWidget {
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(l10n.resetProgressTitle),
-        content: Text(l10n.resetProgressConfirm),
+        backgroundColor: GameUiColors.backgroundBottom,
+        title: Text(l10n.resetProgressTitle, style: GameUiText.hudBold(16)),
+        content: Text(l10n.resetProgressConfirm, style: GameUiText.label()),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -204,44 +173,11 @@ class SettingsScreen extends ConsumerWidget {
             },
             child: Text(
               l10n.reset,
-              style: TextStyle(color: Colors.red.shade700),
+              style: const TextStyle(color: GameUiColors.waveRed),
             ),
           ),
         ],
       ),
-    );
-  }
-}
-
-class _SliderRow extends StatelessWidget {
-  const _SliderRow({
-    required this.label,
-    required this.value,
-    required this.onChanged,
-    this.min = 0,
-    this.max = 1,
-  });
-
-  final String label;
-  final double value;
-  final double min;
-  final double max;
-  final ValueChanged<double> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: Theme.of(context).textTheme.titleMedium),
-        Slider(
-          value: value,
-          min: min,
-          max: max,
-          activeColor: AppColors.purple,
-          onChanged: onChanged,
-        ),
-      ],
     );
   }
 }

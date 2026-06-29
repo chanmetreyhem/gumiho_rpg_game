@@ -1,14 +1,14 @@
-# Gumiho RPG Shooter
+# CaveMan: Survivor
 
-Top-down twin-stick RPG shooter built with **Flutter** and **Flame** for **Android** and **iOS**. Fight wave-based enemies, upgrade gear in the shop, and progress through 10 unlockable levels.
+Top-down twin-stick RPG shooter built with **Flutter** and **Flame** for **Android** and **iOS**. Fight wave-based enemies, upgrade gear in the shop, and progress through **200 levels**.
 
 ## Features
 
 - **Free-move hero** — camera follows the player across a large arena
 - **Dual joysticks** — move + aim/shoot independently
 - **Limited bombs** — AOE damage with explosion VFX
-- **10 levels** — scaling waves (zombie, monster, tank)
-- **9 character skins + 4 guns** — sprite-based shop items
+- **200 levels** — scaling waves across 7 enemy types
+- **9 character skins + 7 guns** — sprite-based shop items
 - **Star ratings** — 1–3 stars by HP remaining; bonus coins scale with stars
 - **English & Khmer** — UI + Noto Sans Khmer font
 - **Local save** — coins, unlocks, settings
@@ -31,6 +31,7 @@ Top-down twin-stick RPG shooter built with **Flutter** and **Flame** for **Andro
 
 | Doc | Contents |
 |-----|----------|
+| **[game_config.md](docs/game_config.md)** | **Guns, heroes, enemies, waves, bombs, prices — full balance reference** |
 | [android_release.md](docs/android_release.md) | Signed APK/AAB builds |
 | [store_listing.md](docs/store_listing.md) | Play Store / App Store copy (EN + KM) |
 | [monetization.md](docs/monetization.md) | Ad units + IAP product IDs |
@@ -60,15 +61,32 @@ lib/
   data/config/      # Waves, shop catalog, level curve
   l10n/             # app_en.arb, app_km.arb
 assets/
-  images/           # Characters, guns, enemies
-  audio/            # SFX + music loop
+  images/           # Characters, guns, enemies, arenas
+  audio/            # SFX + new_music.mp3
   icon/             # App icon source
 ```
 
-## Gameplay Balance
+## Game balance & config
 
-- Enemy HP: `× (1 + level × 0.12)`
-- Enemy speed: `× (1 + level × 0.04)`
+All tunable numbers (gun damage, hero HP, enemy stats, wave rules, shop prices, bombs, stars) are documented in **[docs/game_config.md](docs/game_config.md)**.
+
+Quick reference — main files:
+
+| Config | File |
+|--------|------|
+| Guns, heroes, arenas | `lib/data/config/shop_catalog.dart` |
+| Enemy HP / speed / damage | `lib/data/config/level_curve.dart` |
+| Waves & spawn rules | `lib/data/config/wave_config.dart` |
+| Level count | `lib/data/config/level_config.dart` |
+| Wave buff cards | `lib/features/game/domain/run_combo.dart` |
+| Stars & coin bonus | `lib/features/game/domain/star_rating.dart` |
+
+### Formulas
+
+- Enemy HP: `baseHp × (1 + level × 0.04)`
+- Enemy speed: `baseSpeed × (1 + level × 0.012)`
+- Player HP: `100 × (1 + skin hpBonus)`
+- Player speed: `200 × (1 + skin speedBonus)`
 - Level clear bonus: `level × 15 + stars × 10` coins
 - New players start with **75 coins**
 

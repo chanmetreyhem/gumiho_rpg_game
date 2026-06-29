@@ -1,3 +1,4 @@
+import '../../features/game/domain/arena_stats.dart';
 import '../../features/game/domain/skin_stats.dart';
 import '../../features/game/domain/weapon_special.dart';
 import '../../features/game/domain/weapon_stats.dart';
@@ -164,9 +165,44 @@ class ShopCatalog {
     ),
   ];
 
+  static const arenas = <ArenaStats>[
+    ArenaStats(
+      id: 'forest',
+      name: 'Forest Arena',
+      imageFileName: 'forest-arena.png',
+    ),
+    ArenaStats(
+      id: 'desert',
+      name: 'Desert Arena',
+      imageFileName: 'desert-arena.png',
+      price: 150,
+    ),
+    ArenaStats(
+      id: 'swamp',
+      name: 'Swamp Arena',
+      imageFileName: 'swamp-arena.png',
+      price: 180,
+    ),
+    ArenaStats(
+      id: 'cemetery',
+      name: 'Cemetery Arena',
+      imageFileName: 'cemetery-arena.png',
+      price: 220,
+    ),
+    ArenaStats(
+      id: 'gridlock',
+      name: 'Gridlock Arena',
+      imageFileName: 'gridlock-arena.png',
+      price: 260,
+    ),
+  ];
+
   static WeaponStats weaponById(String id) =>
       weapons.firstWhere((w) => w.id == id, orElse: () => weapons.first);
 
   static SkinStats skinById(String id) =>
       skins.firstWhere((s) => s.id == id, orElse: () => skins.first);
+
+  static ArenaStats arenaById(String id) =>
+      arenas.firstWhere((a) => a.id == id, orElse: () => arenas.first);
 }

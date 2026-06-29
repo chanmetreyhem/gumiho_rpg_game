@@ -20,14 +20,28 @@ class RunCombo {
   final double value;
 }
 
+enum ComboCategory {
+  active,
+  stat,
+  passive,
+}
+
 class RunBuffs {
+  RunBuffs();
+
   double damageMultiplier = 1;
   double fireRateMultiplier = 1;
   double speedMultiplier = 1;
   double bulletSpeedMultiplier = 1;
   double damageReduction = 0;
 
+  final Map<ComboType, int> _pickCounts = {};
+
+  int pickCount(ComboType type) => _pickCounts[type] ?? 0;
+
   void apply(RunCombo combo) {
+    _pickCounts[combo.type] = pickCount(combo.type) + 1;
+
     switch (combo.type) {
       case ComboType.damageUp:
         damageMultiplier += combo.value;
@@ -43,6 +57,24 @@ class RunBuffs {
         break;
     }
   }
+}
+
+extension ComboTypeUi on ComboType {
+  ComboCategory get category => switch (this) {
+        ComboType.damageUp ||
+        ComboType.fireRateUp ||
+        ComboType.extraBomb =>
+          ComboCategory.active,
+        ComboType.maxHpUp || ComboType.heal || ComboType.speedUp =>
+          ComboCategory.stat,
+        ComboType.bulletSpeedUp => ComboCategory.passive,
+      };
+
+  int get progressMax => switch (category) {
+        ComboCategory.active => 1,
+        ComboCategory.stat => 8,
+        ComboCategory.passive => 5,
+      };
 }
 
 class ComboCatalog {

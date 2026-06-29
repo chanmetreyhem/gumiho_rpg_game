@@ -3,157 +3,273 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gumiho_rpg_game/l10n/app_localizations.dart';
 
-import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/app_background.dart';
+import '../../../core/config/app_env.dart';
+import '../../../core/theme/game_ui_theme.dart';
+import '../../../core/widgets/app_animations.dart';
 import '../../../core/widgets/app_bottom_nav.dart';
-import '../../../core/widgets/app_buttons.dart';
-import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/game_ui_widgets.dart';
 import '../../../core/widgets/shop_asset_preview.dart';
 import '../../../data/config/shop_catalog.dart';
+import '../../../data/shop/shop_access.dart';
 import '../../monetization/application/monetization_service.dart';
 import '../../monetization/data/monetization_config.dart';
 import '../../profile/application/profile_notifier.dart';
 import '../../profile/domain/player_profile.dart';
 
-class ShopScreen extends ConsumerWidget {
+class ShopScreen extends ConsumerStatefulWidget {
   const ShopScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ShopScreen> createState() => _ShopScreenState();
+}
+
+class _ShopScreenState extends ConsumerState<ShopScreen>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabs;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabs = TabController(length: 4, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabs.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final profileAsync = ref.watch(profileNotifierProvider);
     final notifier = ref.read(profileNotifierProvider.notifier);
     final monetization = ref.watch(monetizationServiceProvider);
 
     return Scaffold(
-      body: AppBackground(
+      body: GameScreenBackground(
         child: SafeArea(
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
+                padding: const EdgeInsets.fromLTRB(8, 4, 16, 0),
                 child: Row(
                   children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded),
-                      color: AppColors.textPrimary,
+                    GameRoundButton(
+                      icon: Icons.arrow_back_ios_new_rounded,
                       onPressed: () => context.go('/'),
+                      size: 38,
                     ),
                     Expanded(
                       child: Text(
                         l10n.shop,
-                        style: Theme.of(context).textTheme.headlineMedium,
                         textAlign: TextAlign.center,
+                        style: GameUiText.hudBold(20),
                       ),
                     ),
-                    const SizedBox(width: 48),
+                    const SizedBox(width: 38),
                   ],
                 ),
               ),
+              if (AppEnv.shopTestMode)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                  child: GameHudPanel(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.science_rounded,
+                          color: GameUiColors.actionOrange,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            l10n.shopTestModeBanner,
+                            style: GameUiText.hudBold(12),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               Expanded(
                 child: profileAsync.when(
                   loading: () =>
                       const Center(child: CircularProgressIndicator()),
                   error: (_, __) => Center(child: Text(l10n.gameOver)),
-                  data: (profile) => ListView(
-                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+                  data: (profile) => Column(
                     children: [
-                      AppCard(
-                        child: Row(
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
+                        child: _LoadoutSummary(profile: profile, l10n: l10n),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
+                        child: TabBar(
+                          controller: _tabs,
+                          isScrollable: true,
+                          tabAlignment: TabAlignment.start,
+                          labelColor: GameUiColors.expCyan,
+                          unselectedLabelColor: GameUiColors.textMuted,
+                          indicatorColor: GameUiColors.expCyan,
+                          dividerColor: Colors.transparent,
+                          tabs: [
+                            Tab(text: l10n.shopTabHeroes),
+                            Tab(text: l10n.shopTabGuns),
+                            Tab(text: l10n.shopTabArenas),
+                            Tab(text: l10n.shopTabPremium),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: TabBarView(
+                          controller: _tabs,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: AppColors.orange.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: const Icon(
-                                Icons.account_balance_wallet_rounded,
-                                color: AppColors.orange,
-                                size: 28,
-                              ),
+                            _ItemGrid(
+                              l10n: l10n,
+                              profile: profile,
+                              children: ShopCatalog.skins.map((skin) {
+                                final owned =
+                                    ShopAccess.ownsSkin(profile, skin.id);
+                                final equipped =
+                                    profile.equippedSkinId == skin.id;
+                                return _ShopItemCard(
+                                  title: skin.name,
+                                  subtitle: l10n.skinStats(
+                                    (skin.hpBonus * 100).toInt(),
+                                    (skin.speedBonus * 100).toInt(),
+                                  ),
+                                  price: skin.price,
+                                  owned: owned,
+                                  equipped: equipped,
+                                  canBuy: ShopAccess.canAfford(
+                                    profile,
+                                    skin.price,
+                                  ),
+                                  l10n: l10n,
+                                  preview: CharacterPreview(
+                                    characterFolder: skin.characterFolder,
+                                    size: 64,
+                                  ),
+                                  onAction: () {
+                                    if (owned && !equipped) {
+                                      notifier.equipSkin(skin.id);
+                                    } else if (!owned) {
+                                      notifier.purchaseSkin(
+                                        skin.id,
+                                        skin.price,
+                                      );
+                                    }
+                                  },
+                                );
+                              }).toList(),
                             ),
-                            const SizedBox(width: 16),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            _ItemGrid(
+                              l10n: l10n,
+                              profile: profile,
+                              children: ShopCatalog.weapons.map((weapon) {
+                                final owned =
+                                    ShopAccess.ownsGun(profile, weapon.id);
+                                final equipped =
+                                    profile.equippedGunId == weapon.id;
+                                return _ShopItemCard(
+                                  title: weapon.name,
+                                  subtitle: weapon.description.isNotEmpty
+                                      ? '${l10n.weaponStats(weapon.damage.toInt(), weapon.fireRate.toString())}\n${weapon.description}'
+                                      : l10n.weaponStats(
+                                          weapon.damage.toInt(),
+                                          weapon.fireRate.toString(),
+                                        ),
+                                  price: weapon.price,
+                                  owned: owned,
+                                  equipped: equipped,
+                                  canBuy: ShopAccess.canAfford(
+                                    profile,
+                                    weapon.price,
+                                  ),
+                                  l10n: l10n,
+                                  preview: GunPreview(
+                                    weaponId: weapon.id,
+                                    size: 64,
+                                  ),
+                                  onAction: () {
+                                    if (owned && !equipped) {
+                                      notifier.equipGun(weapon.id);
+                                    } else if (!owned) {
+                                      notifier.purchaseGun(
+                                        weapon.id,
+                                        weapon.price,
+                                      );
+                                    }
+                                  },
+                                );
+                              }).toList(),
+                            ),
+                            _ItemGrid(
+                              l10n: l10n,
+                              profile: profile,
+                              children: ShopCatalog.arenas.map((arena) {
+                                final owned =
+                                    ShopAccess.ownsArena(profile, arena.id);
+                                final equipped =
+                                    profile.equippedArenaId == arena.id;
+                                return _ShopItemCard(
+                                  title: arena.name,
+                                  subtitle: l10n.shopTapToEquip,
+                                  price: arena.price,
+                                  owned: owned,
+                                  equipped: equipped,
+                                  canBuy: ShopAccess.canAfford(
+                                    profile,
+                                    arena.price,
+                                  ),
+                                  l10n: l10n,
+                                  previewWide: true,
+                                  preview: LayoutBuilder(
+                                    builder: (context, constraints) {
+                                      return ArenaPreview(
+                                        imageFileName: arena.imageFileName,
+                                        width: constraints.maxWidth,
+                                        height: 88,
+                                      );
+                                    },
+                                  ),
+                                  onAction: () {
+                                    if (owned && !equipped) {
+                                      notifier.equipArena(arena.id);
+                                    } else if (!owned) {
+                                      notifier.purchaseArena(
+                                        arena.id,
+                                        arena.price,
+                                      );
+                                    }
+                                  },
+                                );
+                              }).toList(),
+                            ),
+                            ListView(
+                              padding: const EdgeInsets.fromLTRB(
+                                24,
+                                12,
+                                24,
+                                16,
+                              ),
                               children: [
-                                Text(
-                                  l10n.coins,
-                                  style:
-                                      Theme.of(context).textTheme.bodyMedium,
-                                ),
-                                Text(
-                                  '${profile.coins}',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .headlineMedium,
+                                _PremiumSection(
+                                  profile: profile,
+                                  monetization: monetization,
+                                  l10n: l10n,
                                 ),
                               ],
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 24),
-                      _SectionTitle(title: l10n.premium),
-                      _PremiumSection(
-                        profile: profile,
-                        monetization: monetization,
-                        l10n: l10n,
-                      ),
-                      const SizedBox(height: 20),
-                      _SectionTitle(title: l10n.guns),
-                      ...ShopCatalog.weapons.map((weapon) {
-                        final owned = profile.ownedGuns.contains(weapon.id);
-                        final equipped = profile.equippedGunId == weapon.id;
-                        return _ShopTile(
-                          title: weapon.name,
-                          subtitle: weapon.description.isNotEmpty
-                              ? '${l10n.weaponStats(weapon.damage.toInt(), weapon.fireRate.toString())}\n${weapon.description}'
-                              : l10n.weaponStats(
-                                  weapon.damage.toInt(),
-                                  weapon.fireRate.toString(),
-                                ),
-                          price: weapon.price,
-                          owned: owned,
-                          equipped: equipped,
-                          coins: profile.coins,
-                          equipLabel: l10n.equip,
-                          buyLabel: l10n.buy,
-                          equippedLabel: l10n.equipped,
-                          freeLabel: l10n.free,
-                          preview: GunPreview(weaponId: weapon.id),
-                          onBuy: () =>
-                              notifier.purchaseGun(weapon.id, weapon.price),
-                          onEquip: () => notifier.equipGun(weapon.id),
-                        );
-                      }),
-                      const SizedBox(height: 20),
-                      _SectionTitle(title: l10n.skins),
-                      ...ShopCatalog.skins.map((skin) {
-                        final owned = profile.ownedSkins.contains(skin.id);
-                        final equipped = profile.equippedSkinId == skin.id;
-                        return _ShopTile(
-                          title: skin.name,
-                          subtitle: l10n.skinStats(
-                            (skin.hpBonus * 100).toInt(),
-                            (skin.speedBonus * 100).toInt(),
-                          ),
-                          price: skin.price,
-                          owned: owned,
-                          equipped: equipped,
-                          coins: profile.coins,
-                          equipLabel: l10n.equip,
-                          buyLabel: l10n.buy,
-                          equippedLabel: l10n.equipped,
-                          freeLabel: l10n.free,
-                          preview: CharacterPreview(
-                            characterFolder: skin.characterFolder,
-                          ),
-                          onBuy: () =>
-                              notifier.purchaseSkin(skin.id, skin.price),
-                          onEquip: () => notifier.equipSkin(skin.id),
-                        );
-                      }),
                     ],
                   ),
                 ),
@@ -167,35 +283,146 @@ class ShopScreen extends ConsumerWidget {
   }
 }
 
-class _SectionTitle extends StatelessWidget {
-  const _SectionTitle({required this.title});
+class _LoadoutSummary extends StatelessWidget {
+  const _LoadoutSummary({required this.profile, required this.l10n});
 
-  final String title;
+  final PlayerProfile profile;
+  final AppLocalizations l10n;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Text(title, style: Theme.of(context).textTheme.titleLarge),
+    final skin = ShopCatalog.skinById(profile.equippedSkinId);
+    final weapon = ShopCatalog.weaponById(profile.equippedGunId);
+    final arena = ShopCatalog.arenaById(profile.equippedArenaId);
+
+    return GameHudPanel(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(l10n.shopLoadout, style: GameUiText.hudBold(15)),
+              const Spacer(),
+              const Icon(
+                Icons.monetization_on,
+                color: GameUiColors.actionYellow,
+                size: 18,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                '${profile.coins}',
+                style: GameUiText.hudBold(14, color: GameUiColors.actionYellow),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: _LoadoutChip(
+                  label: skin.name,
+                  child: CharacterPreview(
+                    characterFolder: skin.characterFolder,
+                    size: 40,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _LoadoutChip(
+                  label: weapon.name,
+                  child: GunPreview(weaponId: weapon.id, size: 40),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          _LoadoutChip(
+            label: arena.name,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return ArenaPreview(
+                  imageFileName: arena.imageFileName,
+                  width: constraints.maxWidth,
+                  height: 56,
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
-class _ShopTile extends StatelessWidget {
-  const _ShopTile({
+class _LoadoutChip extends StatelessWidget {
+  const _LoadoutChip({required this.label, required this.child});
+
+  final String label;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: GameUiColors.tileUnlocked,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: GameUiColors.panelBorder),
+      ),
+      child: Column(
+        children: [
+          child,
+          const SizedBox(height: 6),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GameUiText.hudBold(11),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ItemGrid extends StatelessWidget {
+  const _ItemGrid({
+    required this.l10n,
+    required this.profile,
+    required this.children,
+  });
+
+  final AppLocalizations l10n;
+  final PlayerProfile profile;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
+      children: [
+        Text(l10n.shopTapToEquip, style: GameUiText.label()),
+        const SizedBox(height: 12),
+        ...children,
+      ],
+    );
+  }
+}
+
+class _ShopItemCard extends StatelessWidget {
+  const _ShopItemCard({
     required this.title,
     required this.subtitle,
     required this.price,
     required this.owned,
     required this.equipped,
-    required this.coins,
-    required this.equipLabel,
-    required this.buyLabel,
-    required this.equippedLabel,
-    required this.freeLabel,
+    required this.canBuy,
+    required this.l10n,
     required this.preview,
-    this.onBuy,
-    this.onEquip,
+    required this.onAction,
+    this.previewWide = false,
   });
 
   final String title;
@@ -203,71 +430,117 @@ class _ShopTile extends StatelessWidget {
   final int price;
   final bool owned;
   final bool equipped;
-  final int coins;
-  final String equipLabel;
-  final String buyLabel;
-  final String equippedLabel;
-  final String freeLabel;
+  final bool canBuy;
+  final AppLocalizations l10n;
   final Widget preview;
-  final VoidCallback? onBuy;
-  final VoidCallback? onEquip;
+  final VoidCallback onAction;
+  final bool previewWide;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: AppCard(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                color: AppColors.purple.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: preview,
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: Theme.of(context).textTheme.titleMedium),
-                  Text(subtitle, style: Theme.of(context).textTheme.bodyMedium),
-                ],
-              ),
-            ),
-            if (equipped)
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppColors.purple.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(12),
+      child: FadeSlideIn(
+        child: PressableScale(
+          onTap: equipped ? () {} : onAction,
+          enabled: !equipped,
+          child: GameHudPanel(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (previewWide)
+                  preview
+                else
+                  Center(child: preview),
+                const SizedBox(height: 12),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(title, style: GameUiText.hudBold(14)),
+                          const SizedBox(height: 4),
+                          Text(
+                            subtitle,
+                            style: GameUiText.label(),
+                          ),
+                        ],
+                      ),
+                    ),
+                    _ActionBadge(
+                      equipped: equipped,
+                      owned: owned,
+                      price: price,
+                      canBuy: canBuy,
+                      l10n: l10n,
+                    ),
+                  ],
                 ),
-                child: Text(
-                  equippedLabel,
-                  style: const TextStyle(
-                    color: AppColors.purple,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 12,
-                  ),
-                ),
-              )
-            else if (owned)
-              TextButton(
-                onPressed: onEquip,
-                child: Text(equipLabel),
-              )
-            else
-              PrimaryButton(
-                expanded: false,
-                label: price == 0 ? freeLabel : '$price',
-                onPressed: coins >= price || price == 0 ? onBuy : null,
-              ),
-          ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ActionBadge extends StatelessWidget {
+  const _ActionBadge({
+    required this.equipped,
+    required this.owned,
+    required this.price,
+    required this.canBuy,
+    required this.l10n,
+  });
+
+  final bool equipped;
+  final bool owned;
+  final int price;
+  final bool canBuy;
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    if (equipped) {
+      return _pill(l10n.equipped, GameUiColors.expCyan);
+    }
+    if (owned) {
+      return _pill(l10n.equip, GameUiColors.actionOrange);
+    }
+    final label = price == 0 ? l10n.free : '$price';
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: canBuy ? GameUiColors.purpleBadge : GameUiColors.tileLocked,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        label,
+        style: GameUiText.hudBold(
+          12,
+          color: canBuy ? Colors.white : GameUiColors.textMuted,
+        ),
+      ),
+    );
+  }
+
+  Widget _pill(String text, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: color,
+          fontWeight: FontWeight.w700,
+          fontSize: 12,
         ),
       ),
     );
@@ -292,48 +565,28 @@ class _PremiumSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final wizardOwned =
-        profile.ownedSkins.contains(MonetizationConfig.premiumWizardSkinId);
+        ShopAccess.ownsSkin(profile, MonetizationConfig.premiumWizardSkinId);
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (profile.removeAdsPurchased)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Text(
-              l10n.adsRemoved,
-              style: const TextStyle(
-                color: AppColors.purple,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          )
-        else
-          _IapTile(
-            title: l10n.removeAds,
-            price: _price(MonetizationConfig.removeAdsProductId, '\$2.99'),
-            icon: Icons.block_rounded,
-            enabled: monetization.isIapAvailable,
-            onTap: () => monetization.buyNonConsumable(
-              MonetizationConfig.removeAdsProductId,
-            ),
-          ),
+        Text(l10n.premium, style: GameUiText.hudBold(18)),
+        const SizedBox(height: 12),
         _IapTile(
           title: l10n.coinPack500,
           price: _price(MonetizationConfig.coins500ProductId, '\$0.99'),
           icon: Icons.monetization_on_rounded,
           enabled: monetization.isIapAvailable,
-          onTap: () => monetization.buyProduct(
-            MonetizationConfig.coins500ProductId,
-          ),
+          onTap: () =>
+              monetization.buyProduct(MonetizationConfig.coins500ProductId),
         ),
         _IapTile(
           title: l10n.coinPack1500,
           price: _price(MonetizationConfig.coins1500ProductId, '\$2.99'),
           icon: Icons.savings_rounded,
           enabled: monetization.isIapAvailable,
-          onTap: () => monetization.buyProduct(
-            MonetizationConfig.coins1500ProductId,
-          ),
+          onTap: () =>
+              monetization.buyProduct(MonetizationConfig.coins1500ProductId),
         ),
         if (!wizardOwned)
           _IapTile(
@@ -369,28 +622,25 @@ class _IapTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: AppCard(
+      child: GameHudPanel(
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: AppColors.orange.withValues(alpha: 0.12),
+                color: GameUiColors.actionOrange.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: Icon(icon, color: AppColors.orange),
+              child: Icon(icon, color: GameUiColors.actionOrange),
             ),
             const SizedBox(width: 14),
             Expanded(
-              child: Text(
-                title,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
+              child: Text(title, style: GameUiText.hudBold(14)),
             ),
-            PrimaryButton(
-              expanded: false,
+            GamePlayButton(
               label: price,
+              compact: true,
               onPressed: enabled ? onTap : null,
             ),
           ],

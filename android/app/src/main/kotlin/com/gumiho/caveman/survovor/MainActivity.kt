@@ -1,4 +1,4 @@
-package com.example.gumiho_rpg_game
+package com.gumiho.caveman.survovor
 
 import io.flutter.embedding.android.FlutterActivity
 

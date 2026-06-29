@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/config/app_env.dart';
 import '../../monetization/data/monetization_config.dart';
 import '../data/profile_repository.dart';
 import '../domain/player_profile.dart';
@@ -45,33 +46,92 @@ class ProfileNotifier extends AsyncNotifier<PlayerProfile> {
   }
 
   Future<void> purchaseGun(String gunId, int price) async {
-    if (_current.ownedGuns.contains(gunId) || _current.coins < price) return;
+    if (_current.ownedGuns.contains(gunId)) {
+      await equipGun(gunId);
+      return;
+    }
+    if (AppEnv.shopTestMode) {
+      await _persist(
+        _current.copyWith(
+          ownedGuns: [..._current.ownedGuns, gunId],
+          equippedGunId: gunId,
+        ),
+      );
+      return;
+    }
+    if (_current.coins < price) return;
     await _persist(
       _current.copyWith(
         coins: _current.coins - price,
         ownedGuns: [..._current.ownedGuns, gunId],
+        equippedGunId: gunId,
       ),
     );
   }
 
   Future<void> purchaseSkin(String skinId, int price) async {
-    if (_current.ownedSkins.contains(skinId) || _current.coins < price) return;
+    if (_current.ownedSkins.contains(skinId)) {
+      await equipSkin(skinId);
+      return;
+    }
+    if (AppEnv.shopTestMode) {
+      await _persist(
+        _current.copyWith(
+          ownedSkins: [..._current.ownedSkins, skinId],
+          equippedSkinId: skinId,
+        ),
+      );
+      return;
+    }
+    if (_current.coins < price) return;
     await _persist(
       _current.copyWith(
         coins: _current.coins - price,
         ownedSkins: [..._current.ownedSkins, skinId],
+        equippedSkinId: skinId,
+      ),
+    );
+  }
+
+  Future<void> purchaseArena(String arenaId, int price) async {
+    if (_current.ownedArenas.contains(arenaId)) {
+      await equipArena(arenaId);
+      return;
+    }
+    if (AppEnv.shopTestMode) {
+      await _persist(
+        _current.copyWith(
+          ownedArenas: [..._current.ownedArenas, arenaId],
+          equippedArenaId: arenaId,
+        ),
+      );
+      return;
+    }
+    if (_current.coins < price) return;
+    await _persist(
+      _current.copyWith(
+        coins: _current.coins - price,
+        ownedArenas: [..._current.ownedArenas, arenaId],
+        equippedArenaId: arenaId,
       ),
     );
   }
 
   Future<void> equipGun(String gunId) async {
-    if (!_current.ownedGuns.contains(gunId)) return;
+    if (!_current.ownedGuns.contains(gunId) && !AppEnv.shopTestMode) return;
     await _persist(_current.copyWith(equippedGunId: gunId));
   }
 
   Future<void> equipSkin(String skinId) async {
-    if (!_current.ownedSkins.contains(skinId)) return;
+    if (!_current.ownedSkins.contains(skinId) && !AppEnv.shopTestMode) return;
     await _persist(_current.copyWith(equippedSkinId: skinId));
+  }
+
+  Future<void> equipArena(String arenaId) async {
+    if (!_current.ownedArenas.contains(arenaId) && !AppEnv.shopTestMode) {
+      return;
+    }
+    await _persist(_current.copyWith(equippedArenaId: arenaId));
   }
 
   Future<void> resetProgress() async {

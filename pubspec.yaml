@@ -40,12 +40,17 @@ flutter:
     - assets/audio/bomb_throw.wav
     - assets/audio/level_complete.wav
     - assets/audio/game_over.wav
-    - assets/audio/music_loop.wav
+    - assets/audio/new_music.mp3
     - assets/images/enviroment.png
+    - assets/images/arenas/
     - assets/images/gun/
     - assets/images/enemies/zombie/
     - assets/images/enemies/monster/
     - assets/images/enemies/tank/
+    - assets/images/enemies/venomjaw_blaster/
+    - assets/images/enemies/scaleblade_ravager/
+    - assets/images/enemies/blazing_bone_raider/
+    - assets/images/enemies/stone_club_brute/
     - assets/images/Characters/Archer_Character_1/
     - assets/images/Characters/Cave_Man_Character_2/
     - assets/images/Characters/Clown_Character_3/

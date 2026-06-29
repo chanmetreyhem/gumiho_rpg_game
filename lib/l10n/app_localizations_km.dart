@@ -9,7 +9,7 @@ class AppLocalizationsKm extends AppLocalizations {
   AppLocalizationsKm([String locale = 'km']) : super(locale);
 
   @override
-  String get appTitle => 'គូមីហូ RPG';
+  String get appTitle => 'CaveMan: Survivor';
 
   @override
   String get play => 'លេង';
@@ -105,7 +105,31 @@ class AppLocalizationsKm extends AppLocalizations {
   String get guns => 'កាំភ្លើង';
 
   @override
-  String get skins => 'ស្បែក';
+  String get skins => 'វីរបុរស';
+
+  @override
+  String get arenas => 'សង្គ្រាមដី';
+
+  @override
+  String get shopTabHeroes => 'វីរបុរស';
+
+  @override
+  String get shopTabGuns => 'កាំភ្លើង';
+
+  @override
+  String get shopTabArenas => 'សង្គ្រាមដី';
+
+  @override
+  String get shopTabPremium => 'ពិសេស';
+
+  @override
+  String get shopTestModeBanner => 'ម៉ូដសាកល្បង៖ បើកធាតុទាំងអស់សម្រាប់សាកល្បង។';
+
+  @override
+  String get shopLoadout => 'ឧបករណ៍ប្រើ';
+
+  @override
+  String get shopTapToEquip => 'ចុចទិញ ឬប្រើធាតុ';
 
   @override
   String get youScored => 'ពិន្ទុរបស់អ្នក';
@@ -143,6 +167,28 @@ class AppLocalizationsKm extends AppLocalizations {
 
   @override
   String get reset => 'កំណត់ឡើងវិញ';
+
+  @override
+  String get quickPlay => 'លេងភ្លាម';
+
+  @override
+  String get waveProgress => 'រលក';
+
+  @override
+  String levelPage(int current, int total) {
+    return 'ទំព័រ $current / $total';
+  }
+
+  @override
+  String levelsPerPage(int count) {
+    return '$count កម្រិត';
+  }
+
+  @override
+  String get audioSettings => 'សំឡេង & ការបញ្ជា';
+
+  @override
+  String get accountSettings => 'គណនី';
 
   @override
   String get navHome => 'ទំព័រដើម';
@@ -191,6 +237,10 @@ class AppLocalizationsKm extends AppLocalizations {
   String get rewardedCoinsGranted => 'បានបន្ថែមកាក់ ៥០!';
 
   @override
+  String get adNotAvailable =>
+      'ពាណិយកម្មមិនទាន់អាចប្រើបានទេ។ សូមព្យាយាមម្តងទៀត។';
+
+  @override
   String get adsRemoved => 'បានលុបពាណិយកម្ម';
 
   @override
@@ -201,6 +251,28 @@ class AppLocalizationsKm extends AppLocalizations {
 
   @override
   String get comboPickSubtitle => 'ជ្រើសរើសការបន្ថែមមួយសម្រាប់រលកបន្ទាប់';
+
+  @override
+  String get comboPickHint => 'ជ្រើសរើសកាតមួយពីខាងលើ';
+
+  @override
+  String get comboCategoryAct => 'ACT';
+
+  @override
+  String get comboCategoryStat => 'SATA';
+
+  @override
+  String get comboCategoryPas => 'PAS';
+
+  @override
+  String comboLevel(int level) {
+    return 'Lv. $level';
+  }
+
+  @override
+  String comboProgress(int current, int max) {
+    return '$current/$max';
+  }
 
   @override
   String get comboDamageTitle => 'ការបាញ់ខ្លាំង';
@@ -254,5 +326,28 @@ class AppLocalizationsKm extends AppLocalizations {
   @override
   String comboBulletSpeedDesc(int percent) {
     return '+$percent% ល្បឿនគ្រាប់';
+  }
+
+  @override
+  String get splashLoadingProfile => 'កំពុងផ្ទុកប្រវត្តិ...';
+
+  @override
+  String get splashLoadingSettings => 'កំពុងផ្ទុកការកំណត់...';
+
+  @override
+  String get splashLoadingAds => 'កំពុងចាប់ផ្ដើមពាណិជ្ជកម្ម...';
+
+  @override
+  String get splashLoadingStore => 'កំពុងផ្ទុកហាង...';
+
+  @override
+  String get splashFinishing => 'កំពុងចាប់ផ្ដើមហ្គេម...';
+
+  @override
+  String get gamePreparingLevel => 'កំពុងរៀបចំកម្រិត...';
+
+  @override
+  String gameLoadingLevel(int level) {
+    return 'កំពុងផ្ទុកកម្រិត $level...';
   }
 }

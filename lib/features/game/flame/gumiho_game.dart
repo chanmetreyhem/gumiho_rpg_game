@@ -2,21 +2,25 @@ import 'dart:async';
 
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
-import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
 
 import '../../../data/config/game_assets.dart';
 import '../../../data/config/shop_catalog.dart';
+import '../../../data/config/wave_config.dart';
+import '../data/game_image_preloader.dart';
+import '../domain/arena_stats.dart';
 import '../domain/run_combo.dart';
 import '../domain/skin_stats.dart';
 import '../domain/star_rating.dart';
 import '../domain/weapon_stats.dart';
 import 'audio/game_audio.dart';
 import 'components/arena_background.dart';
+import 'components/world_backdrop.dart';
 import 'components/bomb_aim_indicator.dart';
 import 'components/bomb_component.dart';
 import 'components/enemy_component.dart';
 import 'components/player_component.dart';
+import 'input/bomb_input_controller.dart';
 import 'input/dual_joystick_setup.dart';
 import 'managers/bullet_pool.dart';
 import 'managers/effect_manager.dart';
@@ -34,6 +38,7 @@ class GumihoGame extends FlameGame with HasCollisionDetection {
     required this.levelId,
     required this.skin,
     required this.weapon,
+    required this.arena,
     required this.joystickSensitivity,
     required this.musicVolume,
     required this.sfxVolume,
@@ -46,6 +51,7 @@ class GumihoGame extends FlameGame with HasCollisionDetection {
   final int levelId;
   final SkinStats skin;
   final WeaponStats weapon;
+  final ArenaStats arena;
   final double joystickSensitivity;
   final double musicVolume;
   final double sfxVolume;
@@ -56,6 +62,8 @@ class GumihoGame extends FlameGame with HasCollisionDetection {
     required int totalWaves,
     required int bombs,
     required int coins,
+    required int kills,
+    required double elapsedSeconds,
   }) onHudUpdate;
 
   final VoidCallback onPlayerDiedCallback;
@@ -72,11 +80,16 @@ class GumihoGame extends FlameGame with HasCollisionDetection {
 
   int bombsRemaining = 3;
   int runCoins = 0;
+  int killCount = 0;
   int currentWave = 1;
   int totalWaves = 3;
 
+  double _elapsedSeconds = 0;
+  int _lastNotifiedElapsedSecond = -1;
+
   Vector2? bombAimWorld;
   static const double bombThrowRange = 420;
+  bool isBombAiming = false;
 
   final RunBuffs runBuffs = RunBuffs();
   List<RunCombo> comboChoices = const [];
@@ -90,22 +103,32 @@ class GumihoGame extends FlameGame with HasCollisionDetection {
   late final GameAudio audio;
 
   @override
-  Color backgroundColor() => const Color(0xFF1A2F1A);
+  Color backgroundColor() => const Color(0xFF050508);
 
   @override
   Future<void> onLoad() async {
     await super.onLoad();
-    audio = GameAudio(musicVolume: musicVolume, sfxVolume: sfxVolume);
-    unawaited(audio.init());
-    await _preloadAssets();
 
     camera.viewfinder.anchor = Anchor.center;
     camera.viewfinder.visibleGameSize = portraitViewSize;
 
-    world.add(ArenaBackground(arenaSize: arenaSize));
+    world.add(WorldBackdrop(arenaSize: arenaSize));
+    world.add(
+      ArenaBackground(
+        arenaSize: arenaSize,
+        assetPath: arena.assetPath,
+      ),
+    );
+    world.add(ArenaFogLayer(arenaSize: arenaSize));
+
+    audio = GameAudio(musicVolume: musicVolume, sfxVolume: sfxVolume);
+    await Future.wait([
+      audio.init(),
+      _preloadAssets(),
+    ]);
 
     bulletPool = BulletPool(this);
-    await bulletPool.preload();
+    unawaited(bulletPool.preload());
 
     player = PlayerComponent(
       skin: skin,
@@ -123,14 +146,23 @@ class GumihoGame extends FlameGame with HasCollisionDetection {
 
     world.add(DualJoystickSetup());
 
-    unawaited(audio.startMusic());
+    camera.viewport.add(BombInputController());
+
+    await audio.startMusic();
     notifyHud(force: true);
   }
 
   @override
   void update(double dt) {
     super.update(dt);
-    audio.tick(dt);
+    if (!paused) {
+      _elapsedSeconds += dt;
+      final sec = _elapsedSeconds.floor();
+      if (sec != _lastNotifiedElapsedSecond) {
+        _lastNotifiedElapsedSecond = sec;
+        notifyHud();
+      }
+    }
   }
 
   @override
@@ -142,22 +174,16 @@ class GumihoGame extends FlameGame with HasCollisionDetection {
   }
 
   Future<void> _preloadAssets() async {
+    final enemyTypes = WaveConfig.enemyTypesForLevel(levelId);
     final paths = [
       ...GameAssets.preloadPaths(
         characterFolders: [skin.characterFolder],
         weaponIds: [weapon.id],
+        arenaId: arena.id,
       ),
-      ...GameAssets.allEnemyPartPaths,
+      ...GameAssets.enemyPartPathsFor(enemyTypes),
     ];
-    await Future.wait(
-      paths.map((path) async {
-        try {
-          await images.load(path);
-        } on Object {
-          // Optional sprite part — visuals skip missing layers.
-        }
-      }),
-    );
+    await GameImagePreloader.loadPaths(paths);
   }
 
   bool isNearCamera(Vector2 worldPosition) =>
@@ -238,6 +264,8 @@ class GumihoGame extends FlameGame with HasCollisionDetection {
       totalWaves: totalWaves,
       bombs: bombsRemaining,
       coins: runCoins,
+      kills: killCount,
+      elapsedSeconds: _elapsedSeconds,
     );
   }
 
@@ -250,10 +278,13 @@ class GumihoGame extends FlameGame with HasCollisionDetection {
       totalWaves: totalWaves,
       bombs: bombsRemaining,
       coins: runCoins,
+      kills: killCount,
+      elapsedSeconds: _elapsedSeconds,
     );
   }
 
-  Vector2 canvasToWorld(Vector2 canvasPoint) => camera.globalToLocal(canvasPoint);
+  Vector2 bombTargetFromCanvas(Vector2 canvasPoint) =>
+      _clampBombTarget(camera.globalToLocal(canvasPoint));
 
   void setBombAimPreview(Vector2? worldTarget) {
     bombAimWorld = worldTarget == null ? null : _clampBombTarget(worldTarget);
@@ -330,6 +361,7 @@ class GumihoGame extends FlameGame with HasCollisionDetection {
   void onEnemyKilled(EnemyComponent enemy) {
     audio.playEnemyDeath();
     runCoins += enemy.coinReward;
+    killCount++;
     waveManager.onEnemyRemoved();
     notifyHud(force: true);
   }
@@ -357,14 +389,14 @@ class GumihoGame extends FlameGame with HasCollisionDetection {
   void revivePlayer() {
     player.hp = player.maxHp;
     resumeEngine();
-    FlameAudio.bgm.resume();
+    unawaited(audio.resumeMusic());
     notifyHud(force: true);
   }
 
   void requestPause() {
     if (!paused) {
       pauseEngine();
-      FlameAudio.bgm.pause();
+      unawaited(audio.pauseMusic());
       onPauseRequested();
     }
   }
@@ -372,7 +404,7 @@ class GumihoGame extends FlameGame with HasCollisionDetection {
   void resumeFromPause() {
     if (paused) {
       resumeEngine();
-      FlameAudio.bgm.resume();
+      unawaited(audio.resumeMusic());
     }
   }
 
@@ -380,6 +412,7 @@ class GumihoGame extends FlameGame with HasCollisionDetection {
     required int levelId,
     required String skinId,
     required String gunId,
+    required String arenaId,
     required double joystickSensitivity,
     required double musicVolume,
     required double sfxVolume,
@@ -390,6 +423,8 @@ class GumihoGame extends FlameGame with HasCollisionDetection {
       required int totalWaves,
       required int bombs,
       required int coins,
+      required int kills,
+      required double elapsedSeconds,
     }) onHudUpdate,
     required VoidCallback onPlayerDied,
     required LevelCompleteCallback onLevelComplete,
@@ -399,6 +434,7 @@ class GumihoGame extends FlameGame with HasCollisionDetection {
       levelId: levelId,
       skin: ShopCatalog.skinById(skinId),
       weapon: ShopCatalog.weaponById(gunId),
+      arena: ShopCatalog.arenaById(arenaId),
       joystickSensitivity: joystickSensitivity,
       musicVolume: musicVolume,
       sfxVolume: sfxVolume,

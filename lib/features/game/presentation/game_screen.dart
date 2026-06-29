@@ -7,13 +7,16 @@ import 'package:flame/game.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gumiho_rpg_game/l10n/app_localizations.dart';
 
-import '../../../core/widgets/app_buttons.dart';
-import '../../../core/widgets/app_card.dart';
+import '../../../core/theme/game_ui_theme.dart';
+import '../../../core/widgets/game_ui_widgets.dart';
+import '../../../data/config/shop_catalog.dart';
 
 import '../../monetization/application/monetization_service.dart';
 import '../../profile/application/profile_notifier.dart';
 import '../../settings/application/settings_notifier.dart';
 import '../application/game_session_notifier.dart';
+import '../data/game_image_preloader.dart';
+import '../flame/audio/game_audio.dart';
 import '../flame/gumiho_game.dart';
 import '../flame/overlays/combo_pick_overlay.dart';
 import '../flame/overlays/game_end_dialog.dart';
@@ -35,6 +38,8 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   bool _endDialogOpen = false;
   bool _initializing = false;
   bool _sessionReady = false;
+  bool _gameReady = false;
+  bool _preparingLevel = false;
 
   @override
   void initState() {
@@ -78,22 +83,60 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     final profile = profileAsync.requireValue;
     final settings = ref.read(settingsNotifierProvider);
     final sessionNotifier = ref.read(gameSessionNotifierProvider.notifier);
+    final skin = ShopCatalog.skinById(profile.equippedSkinId);
+    final startingMaxHp = 100 * (1 + skin.hpBonus);
+
+    if (mounted) {
+      setState(() {
+        _preparingLevel = true;
+        _gameReady = false;
+      });
+    }
+
+    await Future.wait([
+      GameImagePreloader.preloadForSession(
+        levelId: widget.levelId,
+        skinFolder: skin.characterFolder,
+        weaponId: profile.equippedGunId,
+        arenaId: profile.equippedArenaId,
+      ),
+      GameAudio.warmUp(),
+    ]);
+
+    if (!mounted) {
+      _initializing = false;
+      return;
+    }
+
     sessionNotifier.reset();
-    sessionNotifier.startLevel(widget.levelId, maxHp: 100);
+    sessionNotifier.startLevel(widget.levelId, maxHp: startingMaxHp);
 
     _pauseDialogOpen = false;
     _endDialogOpen = false;
     _sessionReady = true;
     _gameSessionKey++;
+    _preparingLevel = false;
 
+    final game = _buildGame(profile, settings, sessionNotifier);
     setState(() {
-      _game = _buildGame(profile, settings, sessionNotifier);
+      _game = game;
+      _gameReady = false;
     });
+
+    unawaited(
+      game.loaded.then((_) {
+        if (mounted) {
+          setState(() => _gameReady = true);
+        }
+      }),
+    );
     _initializing = false;
   }
 
   Future<void> _restartGame() async {
     _sessionReady = false;
+    _gameReady = false;
+    _preparingLevel = false;
     _pauseDialogOpen = false;
     _endDialogOpen = false;
     ref.read(gameSessionNotifierProvider.notifier).reset();
@@ -131,22 +174,46 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       }
     });
 
+    ref.listen(settingsNotifierProvider, (prev, next) {
+      final game = _game;
+      if (game == null) return;
+      game.audio.updateVolumes(
+        musicVolume: next.musicVolume,
+        sfxVolume: next.sfxVolume,
+      );
+    });
+
     if (_game == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+      final l10n = AppLocalizations.of(context)!;
+      return Scaffold(
+        body: _GameLoadingOverlay(
+          message: _preparingLevel
+              ? l10n.gameLoadingLevel(widget.levelId)
+              : l10n.gamePreparingLevel,
+        ),
       );
     }
 
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      body: GameWidget(
-        key: ValueKey(_gameSessionKey),
-        game: _game!,
-        overlayBuilderMap: {
-          'hud': (context, game) => GameHudOverlay(game: game as GumihoGame),
-          'combo': (context, game) =>
-              ComboPickOverlay(game: game as GumihoGame),
-        },
-        initialActiveOverlays: const ['hud'],
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          GameWidget(
+            key: ValueKey(_gameSessionKey),
+            game: _game!,
+            overlayBuilderMap: {
+              'hud': (context, game) => GameHudOverlay(game: game as GumihoGame),
+              'combo': (context, game) =>
+                  ComboPickOverlay(game: game as GumihoGame),
+            },
+            initialActiveOverlays: const ['hud'],
+          ),
+          if (!_gameReady)
+            _GameLoadingOverlay(
+              message: l10n.gameLoadingLevel(widget.levelId),
+            ),
+        ],
       ),
     );
   }
@@ -160,6 +227,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       levelId: widget.levelId,
       skinId: profile.equippedSkinId,
       gunId: profile.equippedGunId,
+      arenaId: profile.equippedArenaId,
       joystickSensitivity: settings.joystickSensitivity,
       musicVolume: settings.musicVolume,
       sfxVolume: settings.sfxVolume,
@@ -170,13 +238,19 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         required totalWaves,
         required bombs,
         required coins,
+        required kills,
+        required elapsedSeconds,
       }) {
         _safeUpdateHud(
           sessionNotifier,
           playerHp: hp,
+          maxHp: maxHp,
           currentWave: wave,
+          totalWaves: totalWaves,
           bombsRemaining: bombs,
           runCoins: coins,
+          killCount: kills,
+          elapsedSeconds: elapsedSeconds,
         );
       },
       onPlayerDied: () => _safeEndGame(sessionNotifier, won: false),
@@ -206,18 +280,25 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   void _safeUpdateHud(
     GameSessionNotifier notifier, {
     required double playerHp,
+    required double maxHp,
     required int currentWave,
+    int? totalWaves,
     required int bombsRemaining,
     required int runCoins,
+    int? killCount,
+    double? elapsedSeconds,
   }) {
     if (!mounted) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       notifier.updateHud(
         playerHp: playerHp,
+        maxHp: maxHp,
         currentWave: currentWave,
         bombsRemaining: bombsRemaining,
         runCoins: runCoins,
+        killCount: killCount,
+        elapsedSeconds: elapsedSeconds,
       );
     });
   }
@@ -259,34 +340,47 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       barrierDismissible: false,
       builder: (ctx) => Dialog(
         backgroundColor: Colors.transparent,
-        child: AppCard(
+        child: GameHudPanel(
+          padding: const EdgeInsets.all(20),
+          radius: 18,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                l10n.pause,
-                style: Theme.of(ctx).textTheme.headlineMedium,
+                l10n.pause.toUpperCase(),
+                style: GameUiText.hudBold(18),
               ),
               const SizedBox(height: 24),
-              PrimaryButton(
-                label: l10n.resume,
-                icon: Icons.play_arrow_rounded,
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  _pauseDialogOpen = false;
-                  ref.read(gameSessionNotifierProvider.notifier).setPaused(false);
-                  _game?.resumeFromPause();
-                },
+              SizedBox(
+                width: double.infinity,
+                child: GamePlayButton(
+                  label: l10n.resume,
+                  icon: Icons.play_arrow_rounded,
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    _pauseDialogOpen = false;
+                    ref.read(gameSessionNotifierProvider.notifier).setPaused(false);
+                    _game?.resumeFromPause();
+                  },
+                ),
               ),
               const SizedBox(height: 10),
-              SecondaryButton(
-                label: l10n.quit,
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  _pauseDialogOpen = false;
-                  ref.read(gameSessionNotifierProvider.notifier).reset();
-                  context.go('/');
-                },
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    _pauseDialogOpen = false;
+                    ref.read(gameSessionNotifierProvider.notifier).reset();
+                    context.go('/');
+                  },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: GameUiColors.waveRed,
+                    side: const BorderSide(color: GameUiColors.waveRed),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  child: Text(l10n.quit),
+                ),
               ),
             ],
           ),
@@ -321,7 +415,13 @@ class _GameScreenState extends ConsumerState<GameScreen> {
             ? null
             : () async {
                 final rewarded = await monetization.showRewardedAd();
-                if (!rewarded || !ctx.mounted) return;
+                if (!ctx.mounted) return;
+                if (!rewarded) {
+                  ScaffoldMessenger.of(ctx).showSnackBar(
+                    SnackBar(content: Text(l10n.adNotAvailable)),
+                  );
+                  return;
+                }
                 Navigator.pop(ctx);
                 _endDialogOpen = false;
                 ref.read(gameSessionNotifierProvider.notifier).revive();
@@ -331,7 +431,13 @@ class _GameScreenState extends ConsumerState<GameScreen> {
             ? null
             : () async {
                 final rewarded = await monetization.showRewardedAd();
-                if (!rewarded || !ctx.mounted) return;
+                if (!ctx.mounted) return;
+                if (!rewarded) {
+                  ScaffoldMessenger.of(ctx).showSnackBar(
+                    SnackBar(content: Text(l10n.adNotAvailable)),
+                  );
+                  return;
+                }
                 await ref
                     .read(profileNotifierProvider.notifier)
                     .grantRewardedCoins();
@@ -340,18 +446,57 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                   SnackBar(content: Text(l10n.rewardedCoinsGranted)),
                 );
               },
-        onContinue: () async {
-          if (!won) {
-            await monetization.showInterstitialIfAllowed(
-              adsRemoved: profile.removeAdsPurchased,
-            );
-          }
+        onContinue: () {
           if (!ctx.mounted) return;
           Navigator.pop(ctx);
           _endDialogOpen = false;
           ref.read(gameSessionNotifierProvider.notifier).reset();
           ctx.go('/levels');
+          if (!won) {
+            unawaited(
+              monetization.showInterstitialIfAllowed(
+                adsRemoved: profile.removeAdsPurchased,
+              ),
+            );
+          }
         },
+      ),
+    );
+  }
+}
+
+class _GameLoadingOverlay extends StatelessWidget {
+  const _GameLoadingOverlay({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: const BoxDecoration(gradient: GameUiColors.screenGradient),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(
+              width: 44,
+              height: 44,
+              child: CircularProgressIndicator(
+                strokeWidth: 3,
+                color: GameUiColors.actionYellow,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Text(
+                message,
+                textAlign: TextAlign.center,
+                style: GameUiText.hudBold(18, color: GameUiColors.textMuted),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -22,6 +22,9 @@ final monetizationServiceProvider = Provider<MonetizationService>((ref) {
 class MonetizationService {
   MonetizationService({required this.onPurchase});
 
+  static const Duration _loadTimeout = Duration(seconds: 8);
+  static const Duration _showTimeout = Duration(seconds: 45);
+
   final PurchaseHandler onPurchase;
 
   RewardedAd? _rewardedAd;
@@ -31,17 +34,17 @@ class MonetizationService {
   Map<String, ProductDetails> _products = {};
 
   bool get isIapAvailable => _iapAvailable;
+  bool get isRewardedAdReady => _rewardedAd != null;
   Map<String, ProductDetails> get products => _products;
 
   Future<void> init() async {
     if (!kIsWeb) {
-      await _loadRewardedAd();
-      await _loadInterstitialAd();
+      unawaited(preloadAds());
     }
-    await _initIap();
+    await initIap();
   }
 
-  Future<void> _initIap() async {
+  Future<void> initIap() async {
     final iap = InAppPurchase.instance;
     _iapAvailable = await iap.isAvailable();
     if (!_iapAvailable) return;
@@ -51,8 +54,17 @@ class MonetizationService {
       onError: (_) {},
     );
 
-    final response = await iap.queryProductDetails(MonetizationConfig.allProductIds);
+    final response =
+        await iap.queryProductDetails(MonetizationConfig.allProductIds);
     _products = {for (final p in response.productDetails) p.id: p};
+  }
+
+  Future<void> preloadAds() async {
+    if (kIsWeb) return;
+    await Future.wait([
+      _loadRewardedAd(),
+      _loadInterstitialAd(),
+    ]);
   }
 
   Future<void> _onPurchaseUpdate(List<PurchaseDetails> purchases) async {
@@ -100,13 +112,16 @@ class MonetizationService {
     await InAppPurchase.instance.restorePurchases();
   }
 
+  /// Returns true only if the user earned the reward. Never blocks indefinitely.
   Future<bool> showRewardedAd() async {
     if (kIsWeb) return false;
-    final ad = _rewardedAd;
-    if (ad == null) {
+
+    if (_rewardedAd == null) {
       await _loadRewardedAd();
-      return false;
     }
+
+    final ad = _rewardedAd;
+    if (ad == null) return false;
 
     final completer = Completer<bool>();
     var rewarded = false;
@@ -115,48 +130,84 @@ class MonetizationService {
       onAdDismissedFullScreenContent: (ad) {
         ad.dispose();
         _rewardedAd = null;
-        _loadRewardedAd();
+        unawaited(_loadRewardedAd());
         if (!completer.isCompleted) completer.complete(rewarded);
       },
       onAdFailedToShowFullScreenContent: (ad, _) {
         ad.dispose();
         _rewardedAd = null;
-        _loadRewardedAd();
+        unawaited(_loadRewardedAd());
         if (!completer.isCompleted) completer.complete(false);
       },
     );
 
-    ad.show(
-      onUserEarnedReward: (_, __) {
-        rewarded = true;
-      },
-    );
+    try {
+      await ad.show(
+        onUserEarnedReward: (_, __) {
+          rewarded = true;
+        },
+      );
+    } on Object {
+      _rewardedAd?.dispose();
+      _rewardedAd = null;
+      unawaited(_loadRewardedAd());
+      return false;
+    }
 
-    return completer.future;
+    try {
+      return await completer.future.timeout(_showTimeout, onTimeout: () => false);
+    } on TimeoutException {
+      return false;
+    }
   }
 
+  /// Best-effort interstitial. Returns quickly when no ad is ready.
   Future<void> showInterstitialIfAllowed({required bool adsRemoved}) async {
     if (kIsWeb || adsRemoved) return;
-    final ad = _interstitialAd;
-    if (ad == null) {
+
+    if (_interstitialAd == null) {
       await _loadInterstitialAd();
-      return;
     }
+
+    final ad = _interstitialAd;
+    if (ad == null) return;
+
+    _interstitialAd = null;
+
+    final dismissed = Completer<void>();
 
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {
         ad.dispose();
-        _interstitialAd = null;
-        _loadInterstitialAd();
+        unawaited(_loadInterstitialAd());
+        if (!dismissed.isCompleted) dismissed.complete();
       },
       onAdFailedToShowFullScreenContent: (ad, _) {
         ad.dispose();
-        _interstitialAd = null;
-        _loadInterstitialAd();
+        unawaited(_loadInterstitialAd());
+        if (!dismissed.isCompleted) dismissed.complete();
       },
     );
-    await ad.show();
-    _interstitialAd = null;
+
+    try {
+      await ad.show().timeout(
+        const Duration(seconds: 3),
+        onTimeout: () {
+          ad.dispose();
+          unawaited(_loadInterstitialAd());
+        },
+      );
+      await dismissed.future.timeout(
+        _showTimeout,
+        onTimeout: () {
+          ad.dispose();
+          unawaited(_loadInterstitialAd());
+        },
+      );
+    } on Object {
+      ad.dispose();
+      unawaited(_loadInterstitialAd());
+    }
   }
 
   Future<void> _loadRewardedAd() async {
@@ -164,14 +215,29 @@ class MonetizationService {
     final unitId = MonetizationConfig.rewardedAdUnitId;
     if (unitId.isEmpty) return;
 
-    await RewardedAd.load(
+    final loaded = Completer<void>();
+
+    RewardedAd.load(
       adUnitId: unitId,
       request: const AdRequest(),
       rewardedAdLoadCallback: RewardedAdLoadCallback(
-        onAdLoaded: (ad) => _rewardedAd = ad,
-        onAdFailedToLoad: (_) => _rewardedAd = null,
+        onAdLoaded: (ad) {
+          _rewardedAd?.dispose();
+          _rewardedAd = ad;
+          if (!loaded.isCompleted) loaded.complete();
+        },
+        onAdFailedToLoad: (_) {
+          _rewardedAd = null;
+          if (!loaded.isCompleted) loaded.complete();
+        },
       ),
     );
+
+    try {
+      await loaded.future.timeout(_loadTimeout);
+    } on TimeoutException {
+      _rewardedAd = null;
+    }
   }
 
   Future<void> _loadInterstitialAd() async {
@@ -179,14 +245,29 @@ class MonetizationService {
     final unitId = MonetizationConfig.interstitialAdUnitId;
     if (unitId.isEmpty) return;
 
-    await InterstitialAd.load(
+    final loaded = Completer<void>();
+
+    InterstitialAd.load(
       adUnitId: unitId,
       request: const AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
-        onAdLoaded: (ad) => _interstitialAd = ad,
-        onAdFailedToLoad: (_) => _interstitialAd = null,
+        onAdLoaded: (ad) {
+          _interstitialAd?.dispose();
+          _interstitialAd = ad;
+          if (!loaded.isCompleted) loaded.complete();
+        },
+        onAdFailedToLoad: (_) {
+          _interstitialAd = null;
+          if (!loaded.isCompleted) loaded.complete();
+        },
       ),
     );
+
+    try {
+      await loaded.future.timeout(_loadTimeout);
+    } on TimeoutException {
+      _interstitialAd = null;
+    }
   }
 
   void dispose() {

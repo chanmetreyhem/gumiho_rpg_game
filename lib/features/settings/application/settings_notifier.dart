@@ -21,6 +21,10 @@ class SettingsNotifier extends Notifier<GameSettings> {
     state = await ref.read(settingsRepositoryProvider).load();
   }
 
+  Future<void> ensureLoaded() async {
+    state = await ref.read(settingsRepositoryProvider).load();
+  }
+
   Future<void> setLocale(String code) async {
     state = state.copyWith(localeCode: code);
     await ref.read(settingsRepositoryProvider).save(state);

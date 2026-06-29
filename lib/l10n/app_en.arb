@@ -1,6 +1,6 @@
 {
   "@@locale": "en",
-  "appTitle": "Gumiho RPG",
+  "appTitle": "CaveMan: Survivor",
   "play": "Play",
   "shop": "Shop",
   "settings": "Settings",
@@ -54,7 +54,15 @@
   "gameTagline": "Survive waves. Upgrade gear. Become legend.",
   "selectLevel": "Select Level",
   "guns": "Guns",
-  "skins": "Skins",
+  "skins": "Heroes",
+  "arenas": "Arenas",
+  "shopTabHeroes": "Heroes",
+  "shopTabGuns": "Guns",
+  "shopTabArenas": "Arenas",
+  "shopTabPremium": "Premium",
+  "shopTestModeBanner": "Test mode: all items unlocked for trying features.",
+  "shopLoadout": "Your loadout",
+  "shopTapToEquip": "Tap an item to buy or equip",
   "youScored": "YOU'VE SCORED",
   "points": "Points",
   "playAgain": "PLAY AGAIN",
@@ -67,6 +75,21 @@
   "resetProgressConfirm": "This will erase coins, levels, and shop purchases. This cannot be undone.",
   "cancel": "Cancel",
   "reset": "Reset",
+  "quickPlay": "QUICK PLAY",
+  "waveProgress": "WAVE",
+  "levelPage": "Page {current} / {total}",
+  "@levelPage": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "levelsPerPage": "{count} levels",
+  "@levelsPerPage": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "audioSettings": "Audio & Controls",
+  "accountSettings": "Account",
   "navHome": "Home",
   "navPlay": "Play",
   "free": "Free",
@@ -93,10 +116,26 @@
   "watchAdForCoins": "Watch ad for +50 coins",
   "watchAdToRevive": "Watch ad to revive",
   "rewardedCoinsGranted": "+50 coins added!",
+  "adNotAvailable": "Ad not available right now. Try again later.",
   "adsRemoved": "Ads removed",
   "purchaseRestored": "Purchases restored",
   "comboPickTitle": "Wave cleared!",
   "comboPickSubtitle": "Choose one boost for the next wave",
+  "comboPickHint": "Select one card from above",
+  "comboCategoryAct": "ACT",
+  "comboCategoryStat": "SATA",
+  "comboCategoryPas": "PAS",
+  "comboLevel": "Lv. {level}",
+  "@comboLevel": {
+    "placeholders": { "level": { "type": "int" } }
+  },
+  "comboProgress": "{current}/{max}",
+  "@comboProgress": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "max": { "type": "int" }
+    }
+  },
   "comboDamageTitle": "Power Shot",
   "comboDamageDesc": "+{percent}% bullet damage",
   "@comboDamageDesc": {
@@ -128,5 +167,17 @@
   "comboBulletSpeedDesc": "+{percent}% bullet speed",
   "@comboBulletSpeedDesc": {
     "placeholders": { "percent": { "type": "int" } }
+  },
+  "splashLoadingProfile": "Loading profile...",
+  "splashLoadingSettings": "Loading settings...",
+  "splashLoadingAds": "Initializing ads...",
+  "splashLoadingStore": "Loading store...",
+  "splashFinishing": "Starting game...",
+  "gamePreparingLevel": "Preparing level...",
+  "gameLoadingLevel": "Loading level {level}...",
+  "@gameLoadingLevel": {
+    "placeholders": {
+      "level": { "type": "int" }
+    }
   }
 }

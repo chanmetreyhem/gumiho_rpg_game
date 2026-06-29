@@ -19,8 +19,17 @@ class EnemyBaseStats {
 }
 
 class LevelCurve {
-  static double hpMultiplier(int level) => 1 + level * 0.055;
-  static double speedMultiplier(int level) => 1 + level * 0.018;
+  /// Visual scale applied to all enemy types.
+  static const double enemySizeScale = 1.3;
+
+  /// Collision radius vs sprite size (higher = easier to land shots).
+  static const double hurtboxRadiusScale = 0.82;
+
+  static double hpMultiplier(int level) => 1 + level * 0.04;
+  static double speedMultiplier(int level) => 1 + level * 0.012;
+
+  static double hurtboxRadius(double visualSize) =>
+      visualSize * 0.5 * hurtboxRadiusScale;
 
   static EnemyBaseStats baseStats(EnemyType type) {
     return switch (type) {
@@ -48,6 +57,38 @@ class LevelCurve {
           size: 52,
           attackStopDistance: 58,
         ),
+      EnemyType.scalebladeRavager => const EnemyBaseStats(
+          hp: 34,
+          speed: 128,
+          contactDamage: 8,
+          coinReward: 12,
+          size: 38,
+          attackStopDistance: 40,
+        ),
+      EnemyType.blazingBoneRaider => const EnemyBaseStats(
+          hp: 48,
+          speed: 96,
+          contactDamage: 11,
+          coinReward: 14,
+          size: 40,
+          attackStopDistance: 46,
+        ),
+      EnemyType.venomjawBlaster => const EnemyBaseStats(
+          hp: 38,
+          speed: 88,
+          contactDamage: 10,
+          coinReward: 16,
+          size: 36,
+          attackStopDistance: 52,
+        ),
+      EnemyType.stoneClubBrute => const EnemyBaseStats(
+          hp: 110,
+          speed: 44,
+          contactDamage: 18,
+          coinReward: 30,
+          size: 56,
+          attackStopDistance: 62,
+        ),
     };
   }
 
@@ -60,8 +101,8 @@ class LevelCurve {
       speed: base.speed * spdMult,
       contactDamage: base.contactDamage,
       coinReward: base.coinReward + (level ~/ 5),
-      size: base.size,
-      attackStopDistance: base.attackStopDistance,
+      size: base.size * enemySizeScale,
+      attackStopDistance: base.attackStopDistance * enemySizeScale,
     );
   }
 }

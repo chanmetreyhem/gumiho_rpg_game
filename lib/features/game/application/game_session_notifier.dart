@@ -17,6 +17,8 @@ class GameSessionState {
     this.totalWaves = 3,
     this.bombsRemaining = 3,
     this.runCoins = 0,
+    this.killCount = 0,
+    this.elapsedSeconds = 0,
     this.isGameOver = false,
     this.isLevelComplete = false,
     this.starsEarned = 0,
@@ -31,6 +33,8 @@ class GameSessionState {
   final int totalWaves;
   final int bombsRemaining;
   final int runCoins;
+  final int killCount;
+  final double elapsedSeconds;
   final bool isGameOver;
   final bool isLevelComplete;
   final int starsEarned;
@@ -47,6 +51,8 @@ class GameSessionState {
     int? totalWaves,
     int? bombsRemaining,
     int? runCoins,
+    int? killCount,
+    double? elapsedSeconds,
     bool? isGameOver,
     bool? isLevelComplete,
     int? starsEarned,
@@ -61,6 +67,8 @@ class GameSessionState {
       totalWaves: totalWaves ?? this.totalWaves,
       bombsRemaining: bombsRemaining ?? this.bombsRemaining,
       runCoins: runCoins ?? this.runCoins,
+      killCount: killCount ?? this.killCount,
+      elapsedSeconds: elapsedSeconds ?? this.elapsedSeconds,
       isGameOver: isGameOver ?? this.isGameOver,
       isLevelComplete: isLevelComplete ?? this.isLevelComplete,
       starsEarned: starsEarned ?? this.starsEarned,
@@ -85,15 +93,23 @@ class GameSessionNotifier extends Notifier<GameSessionState> {
 
   void updateHud({
     double? playerHp,
+    double? maxHp,
     int? currentWave,
+    int? totalWaves,
     int? bombsRemaining,
     int? runCoins,
+    int? killCount,
+    double? elapsedSeconds,
   }) {
     state = state.copyWith(
       playerHp: playerHp,
+      maxHp: maxHp,
       currentWave: currentWave,
+      totalWaves: totalWaves,
       bombsRemaining: bombsRemaining,
       runCoins: runCoins,
+      killCount: killCount,
+      elapsedSeconds: elapsedSeconds,
     );
   }
 

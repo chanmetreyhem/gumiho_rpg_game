@@ -101,7 +101,7 @@ abstract class AppLocalizations {
   /// No description provided for @appTitle.
   ///
   /// In en, this message translates to:
-  /// **'Gumiho RPG'**
+  /// **'CaveMan: Survivor'**
   String get appTitle;
 
   /// No description provided for @play.
@@ -281,8 +281,56 @@ abstract class AppLocalizations {
   /// No description provided for @skins.
   ///
   /// In en, this message translates to:
-  /// **'Skins'**
+  /// **'Heroes'**
   String get skins;
+
+  /// No description provided for @arenas.
+  ///
+  /// In en, this message translates to:
+  /// **'Arenas'**
+  String get arenas;
+
+  /// No description provided for @shopTabHeroes.
+  ///
+  /// In en, this message translates to:
+  /// **'Heroes'**
+  String get shopTabHeroes;
+
+  /// No description provided for @shopTabGuns.
+  ///
+  /// In en, this message translates to:
+  /// **'Guns'**
+  String get shopTabGuns;
+
+  /// No description provided for @shopTabArenas.
+  ///
+  /// In en, this message translates to:
+  /// **'Arenas'**
+  String get shopTabArenas;
+
+  /// No description provided for @shopTabPremium.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium'**
+  String get shopTabPremium;
+
+  /// No description provided for @shopTestModeBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'Test mode: all items unlocked for trying features.'**
+  String get shopTestModeBanner;
+
+  /// No description provided for @shopLoadout.
+  ///
+  /// In en, this message translates to:
+  /// **'Your loadout'**
+  String get shopLoadout;
+
+  /// No description provided for @shopTapToEquip.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap an item to buy or equip'**
+  String get shopTapToEquip;
 
   /// No description provided for @youScored.
   ///
@@ -355,6 +403,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reset'**
   String get reset;
+
+  /// No description provided for @quickPlay.
+  ///
+  /// In en, this message translates to:
+  /// **'QUICK PLAY'**
+  String get quickPlay;
+
+  /// No description provided for @waveProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'WAVE'**
+  String get waveProgress;
+
+  /// No description provided for @levelPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Page {current} / {total}'**
+  String levelPage(int current, int total);
+
+  /// No description provided for @levelsPerPage.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} levels'**
+  String levelsPerPage(int count);
+
+  /// No description provided for @audioSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio & Controls'**
+  String get audioSettings;
+
+  /// No description provided for @accountSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get accountSettings;
 
   /// No description provided for @navHome.
   ///
@@ -440,6 +524,12 @@ abstract class AppLocalizations {
   /// **'+50 coins added!'**
   String get rewardedCoinsGranted;
 
+  /// No description provided for @adNotAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Ad not available right now. Try again later.'**
+  String get adNotAvailable;
+
   /// No description provided for @adsRemoved.
   ///
   /// In en, this message translates to:
@@ -463,6 +553,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Choose one boost for the next wave'**
   String get comboPickSubtitle;
+
+  /// No description provided for @comboPickHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Select one card from above'**
+  String get comboPickHint;
+
+  /// No description provided for @comboCategoryAct.
+  ///
+  /// In en, this message translates to:
+  /// **'ACT'**
+  String get comboCategoryAct;
+
+  /// No description provided for @comboCategoryStat.
+  ///
+  /// In en, this message translates to:
+  /// **'SATA'**
+  String get comboCategoryStat;
+
+  /// No description provided for @comboCategoryPas.
+  ///
+  /// In en, this message translates to:
+  /// **'PAS'**
+  String get comboCategoryPas;
+
+  /// No description provided for @comboLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Lv. {level}'**
+  String comboLevel(int level);
+
+  /// No description provided for @comboProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'{current}/{max}'**
+  String comboProgress(int current, int max);
 
   /// No description provided for @comboDamageTitle.
   ///
@@ -547,6 +673,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'+{percent}% bullet speed'**
   String comboBulletSpeedDesc(int percent);
+
+  /// No description provided for @splashLoadingProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading profile...'**
+  String get splashLoadingProfile;
+
+  /// No description provided for @splashLoadingSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading settings...'**
+  String get splashLoadingSettings;
+
+  /// No description provided for @splashLoadingAds.
+  ///
+  /// In en, this message translates to:
+  /// **'Initializing ads...'**
+  String get splashLoadingAds;
+
+  /// No description provided for @splashLoadingStore.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading store...'**
+  String get splashLoadingStore;
+
+  /// No description provided for @splashFinishing.
+  ///
+  /// In en, this message translates to:
+  /// **'Starting game...'**
+  String get splashFinishing;
+
+  /// No description provided for @gamePreparingLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing level...'**
+  String get gamePreparingLevel;
+
+  /// No description provided for @gameLoadingLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading level {level}...'**
+  String gameLoadingLevel(int level);
 }
 
 class _AppLocalizationsDelegate

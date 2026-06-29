@@ -12,11 +12,14 @@ class BulletComponent extends PositionComponent
   BulletComponent._()
       : _direction = Vector2(1, 0),
         super(
-          size: Vector2(12, 12),
+          size: Vector2(14, 14),
           anchor: Anchor.center,
         );
 
   factory BulletComponent.forPool() => BulletComponent._();
+
+  static const double hitRadius = 6;
+  static const double _maxMoveStep = 10;
 
   double damage = 0;
   double speed = 0;
@@ -27,6 +30,7 @@ class BulletComponent extends PositionComponent
   Vector2 _direction;
   double _traveled = 0;
   bool _active = false;
+  bool _hitProcessed = false;
 
   CircleHitbox? _hitbox;
 
@@ -55,12 +59,14 @@ class BulletComponent extends PositionComponent
     this.bulletGlowColor = bulletGlowColor;
     _traveled = 0;
     _active = true;
+    _hitProcessed = false;
     _updatePaints();
     _hitbox?.collisionType = CollisionType.active;
   }
 
   void deactivate() {
     _active = false;
+    _hitProcessed = false;
     _hitbox?.collisionType = CollisionType.inactive;
   }
 
@@ -74,7 +80,10 @@ class BulletComponent extends PositionComponent
 
   @override
   Future<void> onLoad() async {
-    _hitbox = CircleHitbox(radius: 4);
+    _hitbox = CircleHitbox(
+      radius: hitRadius,
+      anchor: Anchor.center,
+    );
     await add(_hitbox!);
     if (!_active) {
       _hitbox!.collisionType = CollisionType.inactive;
@@ -86,12 +95,37 @@ class BulletComponent extends PositionComponent
     super.update(dt);
     if (!_active) return;
 
-    final delta = _direction * speed * dt;
-    position += delta;
-    _traveled += delta.length;
-    if (_traveled >= GumihoGame.bulletMaxDistance) {
-      _release();
+    var remaining = speed * dt;
+    while (remaining > 0 && _active) {
+      final step = remaining > _maxMoveStep ? _maxMoveStep : remaining;
+      remaining -= step;
+
+      position += _direction * step;
+      _traveled += step;
+
+      if (_traveled >= GumihoGame.bulletMaxDistance) {
+        _release();
+        return;
+      }
+
+      if (_tryHitEnemy()) {
+        return;
+      }
     }
+  }
+
+  /// Distance check each sub-step so fast bullets do not tunnel through foes.
+  bool _tryHitEnemy() {
+    for (final enemy in game.world.children.whereType<EnemyComponent>()) {
+      final combined = hitRadius + enemy.hitRadius;
+      if (position.distanceToSquared(enemy.position) > combined * combined) {
+        continue;
+      }
+      _registerHit(enemy);
+      return true;
+    }
+
+    return false;
   }
 
   @override
@@ -100,11 +134,17 @@ class BulletComponent extends PositionComponent
     PositionComponent other,
   ) {
     super.onCollisionStart(intersectionPoints, other);
-    if (!_active || other is! EnemyComponent) return;
+    if (!_active || _hitProcessed || other is! EnemyComponent) return;
+    _registerHit(other);
+  }
+
+  void _registerHit(EnemyComponent enemy) {
+    if (!_active || _hitProcessed) return;
+    _hitProcessed = true;
 
     game.audio.playHit();
-    other.takeDamage(_resolveDamage(other));
-    _applySpecial(other);
+    enemy.takeDamage(_resolveDamage(enemy));
+    _applySpecial(enemy);
     game.spawnHitEffect(
       worldPosition: position.clone(),
       direction: _direction,
@@ -116,8 +156,7 @@ class BulletComponent extends PositionComponent
 
   double _resolveDamage(EnemyComponent enemy) {
     var amount = damage;
-    if (special == WeaponSpecial.armorPierce &&
-        enemy.type == EnemyType.tank) {
+    if (special == WeaponSpecial.armorPierce && enemy.type.isHeavy) {
       amount *= 1.35;
     }
     return amount;
@@ -140,8 +179,8 @@ class BulletComponent extends PositionComponent
     if (!_active) return;
 
     final center = Offset(size.x / 2, size.y / 2);
-    canvas.drawCircle(center, 6, _glowPaint);
-    canvas.drawCircle(center, 4, _bodyPaint);
-    canvas.drawCircle(center, 2, _corePaint);
+    canvas.drawCircle(center, 7, _glowPaint);
+    canvas.drawCircle(center, 5, _bodyPaint);
+    canvas.drawCircle(center, 2.5, _corePaint);
   }
 }
